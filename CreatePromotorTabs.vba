@@ -1,25 +1,12 @@
 '=======================================================================
 ' Script: CreatePromotorTabs
-' Version: 1.5.6
+' Version: 1.5.7
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 03/30/2025
 ' Description: 
 '   This script automates the creation of new worksheet tabs for each unique Promotor found in the source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Promotor tabs while maintaining a predefined template format.
+'
 '   The script ensures that data is not duplicated by clearing existing records in the Promotor-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, maintains structured header mappings for accurate data placement, and performs an automatic lookup to fetch the full Promotor name from a reference sheet.
-'
-'   Key functionalities:
-'   - Identify and extract unique Promotor names from the source table
-'   - Create new tabs (or reuse existing ones) based on a predefined template
-'   - Clear existing data in Promotor-specific tables before inserting new records
-'   - Copy filtered data from the source sheet to the corresponding Promotor tab
-'   - Paste static values (e.g., company details, payment periods) into designated cells
-'   - Automatically look up the full Promotor name from the "Colaboradores" sheet
-'   - Preserve original sheet visibility settings while temporarily unhiding necessary sheets
-'   - Ensure valid sheet names by replacing special characters and truncating long names
-'   - Optimize performance by disabling screen updates and calculation during execution
-'
-'   This script improves data organization by ensuring each Promotor has a 
-'   dedicated worksheet with up-to-date, non-duplicated records.
 '=======================================================================
 
 Sub CreatePromotorTabs()

@@ -1,24 +1,12 @@
 '=======================================================================
-' Script: ConvertirMenor1000
-' Version: 1.5.6
+' Function: ConvertirMenor1000
+' Version: 1.5.7
 ' Author: Juan Pablo Garcia Murillo
-' Date: 03/30/2025
-' Description:
-'   This helper function converts numbers less than 1000 into their Spanish
-'   text equivalents. It handles special cases for numbers under 20, numbers
-'   between 20 and 29, and numbers between 30 and 999, utilizing predefined
-'   arrays for units, tens, and hundreds. It also ensures the proper formatting
-'   of the number in text (e.g., "23" becomes "VEINTITRÉS").
-'
-'   Key functionalities:
-'   - Converts numbers less than 1000 into Spanish text (e.g., "123" to "CIENTO VEINTITRÉS")
-'   - Handles special cases for numbers below 20 and between 20 and 29
-'   - Handles numbers between 30 and 999, considering units, tens, and hundreds
-'   - Returns a properly formatted string for numbers in the range of 0 to 999
-'   - Uses arrays for units, tens, and hundreds to efficiently convert numbers
-'
-'   This function is used as a part of the `NumeroATexto` function to convert
-'   the integer portion of the number into its Spanish text representation.
+' Date: 04/01/2025
+' Description: 
+'   This function converts a number less than 1000 into its Spanish word representation. 
+'   It handles special cases (numbers from 0 to 19), numbers from 20 to 29 (e.g., "VEINTIUNO"), tens and units (e.g., "TREINTA Y CINCO"), and hundreds (e.g., "CIENTO VEINTE"). 
+'   This function is used by `NumeroATexto` for converting integer values in numbers to words.
 '=======================================================================
 
 Function ConvertirMenor1000(n As Long) As String
@@ -37,7 +25,7 @@ Function ConvertirMenor1000(n As Long) As String
     
     ' Si el número es menor a 20, usar el arreglo de especiales
     If n < 20 Then
-        result = especiales(n)
+        result = especiales(n) ' Special cases (0 to 19)
         ConvertirMenor1000 = Application.Trim(result)
         Exit Function
     End If
@@ -45,47 +33,46 @@ Function ConvertirMenor1000(n As Long) As String
     ' Manejar números entre 20 y 29: VEINTIUNO, VEINTIDOS, etc.
     If n < 30 Then
         If n = 20 Then
-            result = "VEINTE"
+            result = "VEINTE" ' Exactly 20
         Else
-            result = "VEINTI" & unidades(n - 20)
+            result = "VEINTI" & unidades(n - 20) ' Numbers between 21 and 29
         End If
         ConvertirMenor1000 = Application.Trim(result)
         Exit Function
     End If
     
-    ' Para números entre 30 y 99
+    ' Para números entre 30 y 99 (30 to 99)
     If n < 100 Then
         Dim d As Long, u As Long
-        d = Int(n / 10)
-        u = n Mod 10
+        d = Int(n / 10) ' Tens place
+        u = n Mod 10 ' Units place
         If u = 0 Then
-            result = decenas(d)
+            result = decenas(d) ' Exact tens
         Else
-            result = decenas(d) & " Y " & unidades(u)
+            result = decenas(d) & " Y " & unidades(u) ' Tens with units
         End If
         ConvertirMenor1000 = Application.Trim(result)
         Exit Function
     End If
     
-    ' Para números entre 100 y 999
+    ' Para números entre 100 y 999 (100 to 999)
     If n < 1000 Then
         Dim c As Long, resto As Long
-        c = Int(n / 100)
-        resto = n Mod 100
+        c = Int(n / 100) ' Hundreds place
+        resto = n Mod 100 ' Remaining after hundreds
         If n = 100 Then
-            result = "CIEN"
+            result = "CIEN" ' Exactly 100
         Else
             If c = 1 Then
-                result = "CIENTO"
+                result = "CIENTO" ' Special case for 100 to 199
             Else
-                result = centenas(c)
+                result = centenas(c) ' Hundreds
             End If
             If resto > 0 Then
-                result = result & " " & ConvertirMenor1000(resto)
+                result = result & " " & ConvertirMenor1000(resto) ' Add the remainder
             End If
         End If
         ConvertirMenor1000 = Application.Trim(result)
         Exit Function
     End If
 End Function
-
