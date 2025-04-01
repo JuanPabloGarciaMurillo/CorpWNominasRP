@@ -3,9 +3,9 @@
 ' Version: 1.5.7
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/01/2025
-' Description: 
-'   This script calculates the total sum of "PAGO NETO" values from column "D" across a list of specified sheets, as indicated in column "P" of the triggering sheet. 
-'   It checks each listed sheet for the presence of the "PAGO NETO" label in column "A", sums the corresponding values in column "D", and then stores the total sum in cell "J4" of the triggering sheet. 
+' Description:
+'   This script calculates the total sum of "PAGO NETO" values from column "D" across a list of specified sheets, as indicated in column "P" of the triggering sheet.
+'   It checks each listed sheet for the presence of the "PAGO NETO" label in column "A", sums the corresponding values in column "D", and then stores the total sum in cell "J4" of the triggering sheet.
 '   If the active sheet is not listed in column "P", it processes the active sheet separately.
 '=======================================================================
 
