@@ -3,7 +3,7 @@
 ' Version: 1.5.7
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 03/30/2025
-' Description: 
+' Description:
 '   This script automates the creation of new worksheet tabs for each unique Promotor found in the source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Promotor tabs while maintaining a predefined template format.
 '
 '   The script ensures that data is not duplicated by clearing existing records in the Promotor-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, maintains structured header mappings for accurate data placement, and performs an automatic lookup to fetch the full Promotor name from a reference sheet.
@@ -252,36 +252,3 @@ Sub CreatePromotorTabs()
         End If
     Next ws
 End Sub
-
-' Function to check if a sheet is one of the newly created tabs
-Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boolean
-    On Error GoTo NotFound
-    Dim i As Integer
-    For i = 1 To newTabs.Count
-        If newTabs(i) = sheetName Then
-            IsInNewTabs = True
-            Exit Function
-        End If
-    Next i
-    Exit Function
-NotFound:
-    IsInNewTabs = False
-End Function
-
-' Function to check if the row is empty (ignores only the first column)
-Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
-    Dim col As Long
-    Dim lastColumn As Long
-    lastColumn = ws.ListObjects(1).ListColumns.Count
-    
-    ' Check all columns except for the first column
-    For col = 2 To lastColumn ' Skip the first column (column 1)
-        If ws.Cells(rowNum, col).Value <> "" Then
-            IsRowEmpty = False
-            Exit Function
-        End If
-    Next col
-    
-    ' If none of the columns except the first column have data, the row is considered empty
-    IsRowEmpty = True
-End Function
