@@ -1,25 +1,13 @@
 '=======================================================================
 ' Script: CreateCoordinatorTabs
-' Version: 1.5.6
+' Version: 1.5.7
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 03/30/2025
 ' Description: 
 '   This script automates the creation of new worksheet tabs for each unique coordinator found in a source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding coordinator tabs while maintaining a predefined template format.
+'
 '   The script ensures that data is not duplicated by clearing existing records in the coordinator-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, and maintains structured header mappings for accurate data placement.
-'
-'   Key functionalities:
-'   - Identify and extract unique coordinator names from the source table
-'   - Create new tabs (or reuse existing ones) based on a predefined template
-'   - Clear existing data in coordinator-specific tables before inserting new records
-'   - Copy filtered data from the source sheet to the corresponding coordinator tab
-'   - Paste static values (e.g., company details, payment periods) into designated cells
-'   - Preserve original sheet visibility settings while temporarily unhiding necessary sheets
-'   - Ensure valid sheet names by replacing special characters and truncating long names
-'   - Optimize performance by disabling screen updates and calculation during execution
-'
-'   This script improves data organization by ensuring each coordinator has a dedicated worksheet with up-to-date, non-duplicated records.
 
-'  
 '=======================================================================
 
 Sub CreateCoordinatorTabs()
