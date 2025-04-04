@@ -1,65 +1,10 @@
 '=======================================================================
 ' Module: Utils
-' Version: 1.5.7
+' Version: 1.6.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/01/2025
 ' Contains helper functions used throughout the workbook
-
 '=======================================================================
-' Function: IsInNewTabs
-' Description:
-'   This function checks if a given sheet name exists in a collection of newly created tabs.
-'   It iterates through the collection and returns True if the sheet name is found; otherwise, it returns False.
-' Parameters:
-'   - sheetName (String): The name of the sheet to check.
-'   - newTabs (Collection): A collection containing the names of newly created sheets.
-' Returns:
-'   - Boolean: True if the sheet is in the collection, otherwise False.
-'=======================================================================
-' Function to check if a sheet is one of the newly created tabs
-Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boolean
-    Dim i As Integer
-    On Error Resume Next
-    For i = 1 To newTabs.Count
-        If newTabs(i) = sheetName Then
-            IsInNewTabs = True
-            Exit Function
-        End If
-    Next i
-    IsInNewTabs = False ' Default to False if not found
-End Function
-
-'=======================================================================
-' Function: IsRowEmpty
-' Description:
-'   This function checks if a specified row in a worksheet is empty, ignoring the first column.
-'   It iterates through all columns except the first and returns True if no data is found.
-' Parameters:
-'   - ws (Worksheet): The worksheet containing the row to check.
-'   - rowNum (Long): The row number to evaluate.
-' Returns:
-'   - Boolean: True if all checked columns are empty, otherwise False.
-' Notes:
-'   - Assumes the worksheet contains at least one table (ListObject) to determine the last column.
-'   - Only considers columns from the second column onward.
-'=======================================================================
-' Function to check if the row is empty (ignores only the first column)
-Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
-    Dim col As Long
-    Dim lastColumn As Long
-    lastColumn = ws.ListObjects(1).ListColumns.Count
-    
-    ' Check all columns except for the first column
-    For col = 2 To lastColumn ' Skip the first column (column 1)
-        If ws.Cells(rowNum, col).Value <> "" Then
-            IsRowEmpty = False
-            Exit Function
-        End If
-    Next col
-
-    ' If none of the columns except the first column have data, the row is considered empty
-    IsRowEmpty = True
-End Function
 
 '=======================================================================
 ' Function: SumPagoNetoFromSheets
@@ -89,7 +34,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     ' Loop through the sheets
     For Each ws In ThisWorkbook.Worksheets
         ' If processing all visible sheets OR the sheet is in the provided list, proceed
-        If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.Name, sheetNames, 0))) Then
+        If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.name, sheetNames, 0))) Then
             ' Find the last row in column A
             lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
             
@@ -126,6 +71,7 @@ End Function
 '   - Returns an error message if the input is non-numeric or exceeds 100,000.
 '   - Uses `ConvertirMenor1000` to process numbers less than 1000.
 '=======================================================================
+
 Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     ' Verifica que el valor sea numérico y lo limpia de comas y espacios.
     If Not IsNumeric(MyNumber) Then
@@ -193,6 +139,7 @@ End Function
 '   - Handles unique Spanish numbering rules such as "VEINTIUNO" instead of "VEINTE Y UNO".
 '   - "CIEN" is used for exactly 100, while "CIENTO" is used for numbers like 101-199.
 '=======================================================================
+
 Public Function ConvertirMenor1000(n As Long) As String
     ' Arreglos para números especiales y componentes
     Dim especiales As Variant
@@ -260,3 +207,60 @@ Public Function ConvertirMenor1000(n As Long) As String
         Exit Function
     End If
 End Function
+
+'=======================================================================
+' Function: IsInNewTabs
+' Description:
+'   This function checks if a given sheet name exists in a collection of newly created tabs.
+'   It iterates through the collection and returns True if the sheet name is found; otherwise, it returns False.
+' Parameters:
+'   - sheetName (String): The name of the sheet to check.
+'   - newTabs (Collection): A collection containing the names of newly created sheets.
+' Returns:
+'   - Boolean: True if the sheet is in the collection, otherwise False.
+'=======================================================================
+' Function to check if a sheet is one of the newly created tabs
+Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boolean
+    Dim i As Integer
+    On Error Resume Next
+    For i = 1 To newTabs.Count
+        If newTabs(i) = sheetName Then
+            IsInNewTabs = True
+            Exit Function
+        End If
+    Next i
+    IsInNewTabs = False ' Default to False if not found
+End Function
+
+'=======================================================================
+' Function: IsRowEmpty
+' Description:
+'   This function checks if a specified row in a worksheet is empty, ignoring the first column.
+'   It iterates through all columns except the first and returns True if no data is found.
+' Parameters:
+'   - ws (Worksheet): The worksheet containing the row to check.
+'   - rowNum (Long): The row number to evaluate.
+' Returns:
+'   - Boolean: True if all checked columns are empty, otherwise False.
+' Notes:
+'   - Assumes the worksheet contains at least one table (ListObject) to determine the last column.
+'   - Only considers columns from the second column onward.
+'=======================================================================
+' Function to check if the row is empty (ignores only the first column)
+Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
+    Dim col As Long
+    Dim lastColumn As Long
+    lastColumn = ws.ListObjects(1).ListColumns.Count
+    
+    ' Check all columns except for the first column
+    For col = 2 To lastColumn ' Skip the first column (column 1)
+        If ws.Cells(rowNum, col).Value <> "" Then
+            IsRowEmpty = False
+            Exit Function
+        End If
+    Next col
+
+    ' If none of the columns except the first column have data, the row is considered empty
+    IsRowEmpty = True
+End Function
+

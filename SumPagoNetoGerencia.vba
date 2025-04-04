@@ -1,6 +1,6 @@
 '=======================================================================
 ' Script: SumPagoNetoGerencia
-' Version: 1.5.7
+' Version: 1.6.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/01/2025
 ' Description:

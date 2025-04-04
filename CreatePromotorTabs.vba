@@ -1,10 +1,10 @@
 '=======================================================================
 ' Script: CreatePromotorTabs
-' Version: 1.5.7
+' Version: 1.6.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 03/30/2025
 ' Description:
-'   This script automates the creation of new worksheet tabs for each unique Promotor found in the source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Promotor tabs while maintaining a predefined template format.
+'   This script automates the creation of new worksheet tabs for each unique Promotor found in a source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Promotor tabs while maintaining a predefined template format.
 '
 '   The script ensures that data is not duplicated by clearing existing records in the Promotor-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, maintains structured header mappings for accurate data placement, and performs an automatic lookup to fetch the full Promotor name from a reference sheet.
 '=======================================================================
@@ -26,10 +26,10 @@ Sub CreatePromotorTabs()
     Dim ws As Worksheet
     Dim sheetState As Object ' To store the visibility status of each sheet
     Dim newTabs As Collection ' To track newly created tabs
-    Dim razonSocial As Variant, periodoDelPagoDel As Variant, fechaDeExpedicion As Variant, periodoDelPagoAl As Variant ' Values to be copied from the active sheet
     Dim headerMapping As Object
     Dim header As String
 
+    ' Set source and template sheets
     ' Set the source sheet as the active sheet where the button is clicked
     Set wsSource = ActiveSheet ' Now dynamically set to the active sheet
     Set templateSheet = ThisWorkbook.Sheets("Ejemplo Promotor") ' The sheet to be copied
@@ -38,8 +38,10 @@ Sub CreatePromotorTabs()
     Set sheetState = CreateObject("Scripting.Dictionary")
     Set newTabs = New Collection ' Initialize collection to track new tabs
     Set headerMapping = CreateObject("Scripting.Dictionary") ' Initialize the header mapping dictionary
-    
-    ' Define header mapping between source and new tab, excluding "COMISION"
+    ' Create a dictionary to hold unique promotor names
+    Set promotorDict = CreateObject("Scripting.Dictionary")
+
+    ' Define header mapping between source and new tab, excluding "COMISION" and "PAGO")
     headerMapping.Add "PROMOTOR", 1
     headerMapping.Add "CREDENCIAL", 2
     headerMapping.Add "NOMBRE DEL ALUMNO", 3
@@ -66,40 +68,42 @@ Sub CreatePromotorTabs()
     tableStartRow = 9 ' Table data starts from row 9 (skip header row)
 
     ' Get the last row of the table data (excluding Totals Row)
-    lastDataRow = tableObj.ListRows.Count + tableStartRow - 1 - 1 ' Subtracting 1 to exclude the Totals Row
+    lastDataRow = tableObj.ListRows.Count + tableStartRow - 1 ' Subtracting 1 to exclude the Totals Row
     
     ' Define the range for the "Promotor" column (from row 9 to the last data row)
     Set promotorColumn = wsSource.Range("A" & tableStartRow & ":A" & lastDataRow)
 
-    ' Create a dictionary to hold unique promotor names
-    Set promotorDict = CreateObject("Scripting.Dictionary")
-
+    ' Collect unique promotor names (skip header row)
     ' Loop through the "Promotor" column to collect unique values from the table only
     For Each cell In promotorColumn
         promotorName = Trim(cell.Value) ' Trim spaces from promotor name
 
         ' Check if the cell has a valid promotor name and it's not already in the dictionary
-        If promotorName <> "" And Not promotorDict.exists(promotorName) Then
+        If promotorName <> "" And promotorName <> "PROMOTOR" And Not promotorDict.exists(promotorName) Then
             promotorDict.Add promotorName, Nothing ' Add unique promotor to the dictionary
         End If
     Next cell
+
+    ' Prevent errors if no promotors are found
+    If promotorDict.Count = 0 Then
+        MsgBox "No valid promotors found.", vbExclamation, "Error"
+        Exit Sub
+    End If
 
     ' Turn off screen updating and automatic calculation for performance
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
     Application.CutCopyMode = False
 
-    ' Apply the filter to the "Promotor" column in the table (for the full table in the active sheet)
-    tableObj.Range.AutoFilter Field:=1, Criteria1:="*" ' Ensure that filter is initially applied for all rows
-
-    ' List of invalid characters for sheet names
-    invalidChars = Array("\", "/", "?", "*", "[", "]")
-
+    ' Apply sorting to "Promotor" column
     ' Sort the "Promotor" column in ascending order (A-Z)
     tableObj.Sort.SortFields.Clear
-    tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
+    tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
+        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
     tableObj.Sort.Apply
 
+    ' Define invalid characters for sheet names
+    invalidChars = Array("\", "/", "?", "*", "[", "]")
     ' Iterate over unique promotors and create new tabs
     For Each promotorName In promotorDict.Keys
         ' Sanitize promotor name to be a valid sheet name
@@ -121,7 +125,6 @@ Sub CreatePromotorTabs()
         If ws Is Nothing Then
             ' Copy the template sheet after the wsSource (the sheet with the button)
             templateSheet.Copy After:=wsSource
-            
             ' Set the newly created sheet as newTab
             Set newTab = ThisWorkbook.Sheets(wsSource.Index + 1)
             newTab.Name = promotorName
@@ -169,6 +172,9 @@ Sub CreatePromotorTabs()
         End If
     Next promotorName
 
+    ' Copy common values to all tabs
+    Dim razonSocial As Variant, periodoDelPagoDel As Variant
+    Dim fechaDeExpedicion As Variant, periodoDelPagoAl As Variant
     ' Get the values to copy from the active sheet (B2, B3, B6, D3)
     razonSocial = wsSource.Range("B2").Value
     periodoDelPagoDel = wsSource.Range("B3").Value
@@ -190,50 +196,39 @@ Sub CreatePromotorTabs()
     Next promotorName
 '
     ' Loop through the filtered rows (only visible rows for each promotor) and copy the filtered data
+    Dim visibleCells As Range, newRow As ListRow
+
     For Each promotorName In promotorDict.Keys
         ' Apply filter for the current Promotor
         tableObj.Range.AutoFilter Field:=1, Criteria1:=promotorName
-    
-        ' Get the worksheet for the current Promotor
+
+        ' Get the corresponding worksheet for the promotor
+        On Error Resume Next
+        Set visibleCells = tableObj.DataBodyRange.SpecialCells(xlCellTypeVisible)
+        On Error GoTo 0
+
+        If Not visibleCells Is Nothing Then
         Set newTab = ThisWorkbook.Sheets(promotorName)
-    
-        ' Get the table in the new tab
-        Set newTable = newTab.ListObjects(1) ' Assumes only one table exists per sheet
-    
-        ' **Clear existing data in the table before inserting new rows**
-        If newTable.ListRows.Count > 0 Then
-            newTable.DataBodyRange.Delete ' Removes all rows but keeps headers
-        End If
-    
-        ' Check if this is the first iteration (to overwrite the first row)
-        Dim isFirstIteration As Boolean
-        isFirstIteration = True
-    
-        ' Loop through the visible rows after applying the filter
-        For Each cell In wsSource.ListObjects(1).DataBodyRange.SpecialCells(xlCellTypeVisible).Columns(1).Cells
-            ' Skip header row and empty rows
+        Set newTable = newTab.ListObjects(1)
+          If newTable.ListRows.Count > 0 Then newTable.DataBodyRange.Delete
+
+            ' Loop through filtered rows
+            For Each cell In visibleCells.Columns(1).Cells
             If cell.Row >= tableStartRow And Not IsRowEmpty(wsSource, cell.Row) Then
-                ' Add a new row
-                newTable.ListRows.Add
-                ' Get the newly added row (it will be the last row of the table)
-                Set newRow = newTable.ListRows(newTable.ListRows.Count)
-    
-                ' Loop through the columns in the source table and paste values into the corresponding columns of the new row
-                For i = 1 To wsSource.ListObjects(1).ListColumns.Count
-                    header = wsSource.ListObjects(1).ListColumns(i).Name
-                    If headerMapping.exists(header) Then
-                        ' Paste the value in the correct column of the new row
+                    Set newRow = newTable.ListRows.Add
+                    For i = 1 To tableObj.ListColumns.Count
+                        header = tableObj.ListColumns(i).Name
+                        If headerMapping.Exists(header) Then
                         newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.Row, i).Value
                     End If
                 Next i
             End If
         Next cell
-        
         ' Auto-fit columns after inserting data
         newTab.Cells.EntireColumn.AutoFit
+        End If
     Next promotorName
-
-    '
+'
     ' Clean up
     Application.CutCopyMode = False
     wsSource.AutoFilterMode = False ' Reset filter mode in the source sheet
