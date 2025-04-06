@@ -1,6 +1,6 @@
 '=======================================================================
 ' Module: Utils
-' Version: 1.6.2
+' Version: 1.6.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/01/2025
 ' Contains helper functions used throughout the workbook
