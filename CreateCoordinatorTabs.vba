@@ -1,6 +1,6 @@
 '=======================================================================
 ' Script: CreateCoordinatorTabs
-' Version: 1.6.2
+' Version: 1.6.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 03/30/2025
 ' Description:
