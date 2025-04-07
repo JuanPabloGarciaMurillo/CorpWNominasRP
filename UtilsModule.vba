@@ -1,9 +1,25 @@
 '=======================================================================
-' Module: Utils
-' Version: 1.6.3
+' Script: UtilsModule
+' Version: 1.6.4
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/01/2025
-' Contains helper functions used throughout the workbook
+' Date: 04/06/2025
+' Description:
+'   This module contains various utility functions used across the VBA project.
+'   These functions simplify common tasks, such as:
+'   - Summing specific values across multiple sheets
+'   - Converting numeric values into their Spanish word representation
+'   - Checking for the existence of sheets or rows
+'   - Handling special conditions like empty rows or sheet names in new tabs.
+'   - Functions in this module support tasks related to financial data processing,
+'     text formatting, and data integrity checks.
+'
+' Functions included in this module:
+'   - SumPagoNetoFromSheets
+'   - NumeroATexto
+'   - ConvertirMenor1000
+'   - IsInNewTabs
+'   - IsRowEmpty
+'   - CreateCoordinatorTabs_newTabs
 '=======================================================================
 
 '=======================================================================
@@ -34,7 +50,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     ' Loop through the sheets
     For Each ws In ThisWorkbook.Worksheets
         ' If processing all visible sheets OR the sheet is in the provided list, proceed
-        If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.name, sheetNames, 0))) Then
+        If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.Name, sheetNames, 0))) Then
             ' Find the last row in column A
             lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
             
@@ -263,4 +279,27 @@ Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     ' If none of the columns except the first column have data, the row is considered empty
     IsRowEmpty = True
 End Function
+
+'=======================================================================
+' Function: CreateCoordinatorTabs_newTabs
+' Description:
+'   This function returns the collection of newly created tabs (newTabs).
+'   It provides access to the collection for checking or further processing
+'   of the newly created sheets.
+' Parameters:
+'   - None
+' Returns:
+'   - Collection: The collection of sheet names representing the newly
+'     created tabs.
+' Notes:
+'   - The function assumes that the collection `newTabs` has been properly
+'     populated elsewhere in the code.
+'=======================================================================
+
+' Function to return the newTabs collection from the global scope
+Public Function CreateCoordinatorTabs_newTabs() As Collection
+    ' This function returns the newTabs collection
+    Set CreateCoordinatorTabs_newTabs = newTabs
+End Function
+
 

@@ -1,13 +1,31 @@
 '=======================================================================
-' Script: SumPagoNetoCoordinacion
-' Version: 1.6.3
+' Subroutine: SumPagoNetoCoordinacion
+' Version: 1.6.4
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/01/2025
+' Date: 04/06/2025
 ' Description:
-'   This script calculates the total sum of "PAGO NETO" values from column "D" across a list of specified sheets, as indicated in column "P" of the triggering sheet.
-'   It checks each listed sheet for the presence of the "PAGO NETO" label in column "A", sums the corresponding values in column "D", and then stores the total sum in cell "J4" of the triggering sheet.
-'   If the active sheet is not listed in column "P", it processes the active sheet separately.
+'   This subroutine sums the "PAGO NETO" values from multiple sheets 
+'   and stores the total in cell J4 of the target sheet. It first checks 
+'   for a list of sheet names in column P of the active sheet. If sheet 
+'   names are provided, it sums the "PAGO NETO" values from those sheets. 
+'   If no sheet names are listed, it sums the "PAGO NETO" values from 
+'   the active sheet only. The subroutine also handles the case where 
+'   the active sheet is not included in the list, adding its values to 
+'   the sum separately.
+' Parameters:
+'   - None
+' Returns:
+'   - None
+' Notes:
+'   - The "PAGO NETO" values are assumed to be located in a consistent 
+'     location across the sheets being summed.
+'   - If no sheet names are provided in column P, the subroutine will 
+'     sum the "PAGO NETO" values from the active sheet only.
+'   - If the active sheet is not included in the list of sheet names, 
+'     its values will still be added to the sum.
+'   - The total sum is stored in cell J4 of the target sheet.
 '=======================================================================
+
 
 Sub SumPagoNetoCoordinacion()
     Dim targetSheet As Worksheet
