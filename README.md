@@ -1,4 +1,4 @@
-# Excel Automation Suite - Version 1.6.4
+# Excel Automation Suite - Version 1.6.5
 
 ## Description
 
@@ -8,113 +8,112 @@ The **Excel Automation Suite** is a collection of VBA scripts designed to automa
 
 ### 1. **CreateCoordinatorTabs** (Version 1.6.4)
 
-- **Automates Tab Creation**: Creates a new tab for each unique coordinator by copying a template and renaming it to the coordinator’s name.
-- **Data Population**: Populates each new tab with filtered data specific to the coordinator.
-- **Common Value Copying**: Copies shared values (e.g., `razonSocial`, `periodoDelPagoDel`) into all new tabs.
-- **Sorting & Filtering**: Sorts coordinator names and filters the data for each coordinator.
-- **Visibility Management**: Manages sheet visibility by restoring the original visibility state of sheets after processing.
-- **Error Handling**: Handles cases where no coordinators are found or no matching data exists.
+- Automates the creation of new coordinator tabs from a template.
+- Filters and populates each tab with coordinator-specific data.
+- Manages visibility, sorting, and common value copying.
 
 ### 2. **CreatePromotorTabs** (Version 1.6.4)
 
-- **Automates Promotor Tab Creation**: Similar to `CreateCoordinatorTabs`, this subroutine creates tabs for promotors associated with a specific coordinator.
-- **Data Lookup and Transfer**: Populates the new tabs with filtered data for each promoter, ensuring the data is correctly mapped from the source sheet.
-- **Template Consistency**: Ensures that new tabs follow the same format as the template sheet, maintaining consistency across the workbook.
-- **Visibility Management**: Ensures proper handling of sheet visibility and tab creation.
+- Creates promoter tabs under each coordinator's sheet.
+- Copies data and formatting from a template.
+- Populates each sheet with filtered promoter data.
 
 ### 3. **CreateBaseSalaryTabsIfMissing**
 
-- **Base Salary Tab Creation**: Creates salary tabs for each promoter that is listed in the "Sueldos_Base" table under a specific coordinator.
-- **Table Filtering**: Filters the data for each promotor and creates a new tab accordingly.
+- Creates salary tabs for each promoter if their base salary exists in the "Sueldos_Base" table.
+- Ensures no duplicate tabs are created for promotors.
 
 ### 4. **Dynamic Data Validation Setup**
 
-- **COORDINADOR Validation**: Applies dynamic data validation to the "COORDINADOR" column using values from the "Gerentes" and "Coordinadores" tables.
-- **PROMOTOR Validation**: Applies dynamic validation to the "PROMOTOR" column based on the selected coordinator, ensuring that only relevant promoters are available for selection.
+- Sets up dependent dropdowns for:
+  - **COORDINADOR** column, filtered by Gerente selection.
+  - **PROMOTOR** column, filtered by Coordinador selection.
 
-### 5. **Utility Functions in `mod_UtilsModule`**
+### 5. **RenameGerenteTabToAlias** (Version 1.6.5)
 
-- **Reusable Functions**: Includes various utility functions for general data management:
-  - **Summing Values**: Sum values from specific columns across sheets.
-  - **Number to Spanish Words**: Converts numbers to their Spanish word equivalents.
-  - **Sheet Creation and Naming**: Handles creating and naming sheets from templates.
-  - **Data Lookup**: Performs lookups to retrieve specific data from tables.
-  - **Filtering and Sorting**: Provides functions to sort and filter tables easily.
-  - **Table Population**: Automates the process of populating tables with filtered data.
-  - **Sheet Existence Check**: Checks if a sheet exists before attempting to create it.
-  - **Row Empty Check**: Determines if a row is empty, excluding certain columns.
+- **New Feature!**
+- Automatically renames the active Gerente sheet based on the value in cell `B2`, using the **Alias** from the `Gerentes` table in the `Colaboradores` sheet.
+- Prevents duplicate sheet names and ensures alignment with user-friendly naming.
+- Includes built-in error handling and validation.
+
+### 6. **Utility Functions in `mod_UtilsModule`**
+
+- Reusable helper functions:
+  - Sheet creation and cleanup
+  - Sheet existence checks
+  - Row validation
+  - Filtering and sorting
+  - Number-to-words conversion (Spanish)
+  - Net pay summation
+  - Lookup utilities
 
 ## Requirements
 
-- **Excel**: The suite is designed to run in Microsoft Excel.
-- **VBA**: The suite is written in Visual Basic for Applications (VBA) and should be placed in the VBA editor of your Excel workbook.
+- **Excel**: Microsoft Excel (macro-enabled).
+- **VBA**: All scripts must be installed via the VBA editor (`Alt + F11`).
 
 ## Setup Instructions
 
-1. **Open Excel Workbook**: Open the Excel workbook where you want to run the scripts.
-2. **Access VBA Editor**: Press `Alt + F11` to open the Visual Basic for Applications editor.
-3. **Insert the Code**:
-   - Insert each subroutine (e.g., `CreateCoordinatorTabs`, `CreatePromotorTabs`) into separate or shared modules in the workbook.
-   - Include the utility functions in a module like `mod_UtilsModule`.
-4. **Run the Scripts**: You can run individual subroutines like `CreateCoordinatorTabs` or link them to buttons or triggers in Excel.
+1. **Open Excel Workbook**.
+2. **Access the VBA Editor** (`Alt + F11`).
+3. **Add/Update Modules**:
+   - Add or update `mod_UtilsModule` with the latest utility functions.
+   - Ensure the `Colaboradores` sheet has a properly named table: `Gerentes`.
+4. **Run the `CreateCoordinatorAndPromotorTabs` Subroutine**:
+   - This subroutine will now include a call to `RenameGerenteTabToAlias`, which will rename the active sheet automatically.
 
 ## Parameters
 
-- **None for Most Scripts**: These subroutines are generally designed without requiring input parameters. They operate based on the active workbook and existing data.
-- **Dynamic Validation Parameters**: Validation setup functions may use the values already existing in specific columns and tables in the workbook.
+- Most scripts operate on the current workbook context and require no parameters.
+- The `RenameGerenteTabToAlias` function uses the value in cell `B2` of the active sheet.
 
 ## Returns
 
-- **None**: The subroutines modify the workbook by creating tabs, updating data, and managing visibility, but they do not return any values.
+- Most subroutines return nothing.
+- `RenameGerenteTabToAlias` returns a Boolean indicating if the rename was successful.
 
 ## Notes
 
-- **Sheet Name Sanitization**: All sheet names are sanitized to ensure they are valid according to Excel’s limitations (e.g., not exceeding 31 characters and excluding invalid characters such as `\`, `/`, `?`, `*`, `[`, `]`).
-- **Error Handling**: The scripts include error handling for cases where no coordinators or promotors are found or where matches are not found for specific data.
-- **Visibility Management**: The visibility state of sheets is managed carefully, with the original visibility restored once the processing is completed.
-- **Template Consistency**: New tabs are created by copying a template sheet, ensuring that all generated tabs maintain a consistent format.
+- **Naming Rules**: Sheet names are sanitized to prevent invalid characters and duplicates.
+- **B2 Format**: The Gerente's full name must be correctly entered in `B2`, matching exactly with the `NOMBRE` column of the `Gerentes` table.
+- **SheetExists** utility is used to validate sheet name uniqueness before renaming.
+- **Merged Cell Support**: Even if `B2:D2` is merged, only the `B2` value is read.
 
 ## Example Workflow
 
-1. **Create Coordinator Tabs**:
-
-   - Run the `CreateCoordinatorTabs` subroutine to automatically generate new tabs for each unique coordinator.
-   - Each new tab will be populated with data specific to the coordinator and will include common values like `razonSocial`.
-
-2. **Create Promotor Tabs**:
-
-   - Use the `CreatePromotorTabs` script to create tabs for promotors under a specific coordinator, with data filtering based on the coordinator's information.
-
-3. **Dynamic Data Validation**:
-
-   - Apply data validation rules to ensure that the "COORDINADOR" and "PROMOTOR" columns dynamically adjust based on the available options in the respective tables.
-
-4. **Base Salary Tab Creation**:
-   - Run the `CreateBaseSalaryTabsIfMissing` subroutine to ensure that salary tabs are created for each promotor with base salary data.
+1. Open a Gerente sheet (e.g., “Sheet1”) and confirm the full name in `B2`.
+2. Run `CreateCoordinatorAndPromotorTabs`.
+3. The script:
+   - Creates coordinator and promotor tabs.
+   - Renames the current Gerente sheet to the appropriate alias (e.g., `"PEDRO MORA"`).
+4. Ensures consistent, user-friendly sheet naming across the workbook.
 
 ## Version History
 
+### Version 1.6.5
+
+- **Added**: `RenameGerenteTabToAlias` function to auto-rename Gerente sheets based on the `Gerentes` table.
+- **Improved**: Sheet naming consistency and clarity using aliases.
+- **Enhanced**: Sheet existence check now integrated for safe renaming.
+
 ### Version 1.6.4
 
-- **Added**: Enhanced tab creation and population for coordinators and promotors.
-- **Improved**: Dynamic data validation handling for the "COORDINADOR" and "PROMOTOR" columns.
-- **Fixed**: Visibility management and error handling improvements.
-- **Optimized**: Code performance improvements for tab creation and data population.
+- Enhanced tab creation and data population for coordinators and promotors.
+- Improved dynamic data validation for COORDINADOR and PROMOTOR columns.
+- Fixed visibility handling and optimized performance.
 
 ### Version 1.6.2
 
-- **Created**: `CreatePromotorTabs` to automate the creation of promoter tabs.
-- **Improved**: Template consistency and data population for new tabs.
+- Introduced `CreatePromotorTabs` for automated promotor tab generation.
 
 ### Version 1.5.7
 
-- **Created**: `CreateCoordinatorTabs` to automate the creation of coordinator tabs.
-- **Improved**: Sheet name handling and error checks for existing sheets.
+- Initial release of `CreateCoordinatorTabs` with sheet naming and data logic.
 
 ## License
 
-This suite is provided as-is and can be freely used or modified for personal or commercial purposes. No warranty is provided.
+This suite is provided as-is and may be freely used or modified for personal or commercial purposes. No warranty is provided.
 
 ---
 
-For any questions or issues, please contact the author at [email@example.com].
+For questions, feedback, or contributions, please contact Juan Pablo Garcia Murillo.

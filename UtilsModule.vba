@@ -1,6 +1,6 @@
 '=======================================================================
 ' Script: UtilsModule
-' Version: 1.6.4
+' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
@@ -20,6 +20,8 @@
 '   - IsInNewTabs
 '   - IsRowEmpty
 '   - CreateCoordinatorTabs_newTabs
+'   - RenameGerenteTabToAlias
+'   - SheetExists
 '=======================================================================
 
 '=======================================================================
@@ -52,7 +54,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
         ' If processing all visible sheets OR the sheet is in the provided list, proceed
         If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.Name, sheetNames, 0))) Then
             ' Find the last row in column A
-            lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+            lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).row
             
             If lastRow >= 1 Then
                 ' Set ranges for columns A and D
@@ -300,6 +302,87 @@ End Function
 Public Function CreateCoordinatorTabs_newTabs() As Collection
     ' This function returns the newTabs collection
     Set CreateCoordinatorTabs_newTabs = newTabs
+End Function
+
+'=========================================================================
+' Function: RenameGerenteTabToAlias
+' Description:
+'   Renames the active Gerente sheet based on the value in cell B2
+'   (Nombre_Gerente), using the ALIAS from the "Gerentes" table on
+'   the "Colaboradores" sheet.
+' Returns:
+'   - True if renamed successfully, False otherwise.
+' Notes:
+'   - Cell B2 must match a value in Gerentes[NOMBRE].
+'   - Prevents renaming if the alias already exists as a sheet.
+'=========================================================================
+
+Function RenameGerenteTabToAlias() As Boolean
+    On Error GoTo ErrHandler
+
+    Dim wsActive As Worksheet
+    Set wsActive = ActiveSheet
+
+    Dim nombreGerente As String
+    nombreGerente = Trim(wsActive.Range("B1").Value)
+
+    If nombreGerente = "" Then
+        MsgBox "B2 (Nombre_Gerente) is empty.", vbExclamation, "RenameGerenteTabToAlias"
+        Exit Function
+    End If
+
+    Dim wsColab As Worksheet
+    Set wsColab = ThisWorkbook.Sheets("Colaboradores")
+
+    Dim tbl As ListObject
+    Set tbl = wsColab.ListObjects("Gerentes")
+
+    Dim row As ListRow
+    For Each row In tbl.ListRows
+        If Trim(row.Range(1, 1).Value) = nombreGerente Then
+            Dim aliasName As String
+            aliasName = Trim(row.Range(1, 2).Value)
+
+            If aliasName <> "" Then
+                If Not SheetExists(aliasName) Then
+                    wsActive.Name = aliasName
+                    RenameGerenteTabToAlias = True
+                    Exit Function
+                Else
+                    MsgBox "Cannot rename: A sheet named '" & aliasName & "' already exists.", vbExclamation
+                    Exit Function
+                End If
+            End If
+        End If
+    Next row
+
+    ' No match found
+    MsgBox "No alias found for Gerente: " & nombreGerente, vbInformation, "RenameGerenteTabToAlias"
+    RenameGerenteTabToAlias = False
+    Exit Function
+
+ErrHandler:
+    MsgBox "Error renaming Gerente sheet: " & Err.Description, vbCritical, "RenameGerenteTabToAlias"
+    RenameGerenteTabToAlias = False
+End Function
+
+'=========================================================================
+' Function: SheetExists
+' Description:
+'   Checks whether a worksheet with the specified name exists in the
+'   current workbook.
+' Parameters:
+'   - sheetName (String): The name of the worksheet to check for.
+' Returns:
+'   - True if the sheet exists, False otherwise.
+' Notes:
+'   - The check is case-insensitive.
+'   - Suppresses runtime errors using On Error Resume Next.
+'=========================================================================
+Function SheetExists(sheetName As String) As Boolean
+    On Error Resume Next
+    SheetExists = Not ThisWorkbook.Sheets(sheetName) Is Nothing
+    On Error GoTo 0
 End Function
 
 

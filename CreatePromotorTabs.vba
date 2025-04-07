@@ -1,39 +1,39 @@
 '=======================================================================
 ' Subroutine: CreatePromotorTabs
-' Version: 1.6.4
+' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
-'   This subroutine automates the process of creating individual tabs for each 
-'   promotor in the workbook. It collects unique promotor names from the 
-'   "Promotores" table in the "Colaboradores" sheet and checks if each 
-'   promotor has a corresponding entry in the "Sueldos_Base" table in the 
-'   "Tabuladores" sheet. If the promotor exists in the "Sueldos_Base" table, 
-'   the subroutine creates a new sheet for that promotor by copying a template 
-'   sheet and renaming it according to the promotor's name. The subroutine 
-'   then populates the new tabs with relevant data from the "Promotores" table 
-'   and applies filters to include only the relevant data for each promotor. 
-'   Common values from the source sheet (e.g., "razonSocial", "periodoDelPagoDel") 
+'   This subroutine automates the process of creating individual tabs for each
+'   promotor in the workbook. It collects unique promotor names from the
+'   "Promotores" table in the "Colaboradores" sheet and checks if each
+'   promotor has a corresponding entry in the "Sueldos_Base" table in the
+'   "Tabuladores" sheet. If the promotor exists in the "Sueldos_Base" table,
+'   the subroutine creates a new sheet for that promotor by copying a template
+'   sheet and renaming it according to the promotor's name. The subroutine
+'   then populates the new tabs with relevant data from the "Promotores" table
+'   and applies filters to include only the relevant data for each promotor.
+'   Common values from the source sheet (e.g., "razonSocial", "periodoDelPagoDel")
 '   are also copied into all the new tabs.
 ' Parameters:
 '   - None
 ' Returns:
 '   - None
 ' Notes:
-'   - The subroutine creates a new tab for each promotor by copying a template 
+'   - The subroutine creates a new tab for each promotor by copying a template
 '     and renaming it to the promotor's name, ensuring the name is valid.
-'   - It first checks for each promotor's base salary entry in the "Sueldos_Base" 
+'   - It first checks for each promotor's base salary entry in the "Sueldos_Base"
 '     table and only creates tabs for those with a valid match.
-'   - The promotor names are sanitized to ensure they are valid sheet names 
+'   - The promotor names are sanitized to ensure they are valid sheet names
 '     (e.g., replacing invalid characters with underscores).
-'   - The subroutine automatically sorts the "Promotor" column in ascending order 
+'   - The subroutine automatically sorts the "Promotor" column in ascending order
 '     before processing the rows.
 '   - If no valid promotors are found, an error message is displayed.
-'   - Filters are applied to each promotor's data, and new tabs are populated 
+'   - Filters are applied to each promotor's data, and new tabs are populated
 '     with filtered rows.
-'   - After creating the tabs, common values from the source sheet are pasted 
+'   - After creating the tabs, common values from the source sheet are pasted
 '     into corresponding cells in each new tab.
-'   - The original visibility state of the sheets is preserved, with only the 
+'   - The original visibility state of the sheets is preserved, with only the
 '     newly created tabs visible.
 '=======================================================================
 
@@ -307,12 +307,12 @@ Public Sub CreatePromotorTabs()
             If Not visibleCells Is Nothing Then
                 ' Loop through filtered rows
                 For Each cell In visibleCells.Columns(1).Cells
-                    If cell.Row >= tableStartRow And Not IsRowEmpty(wsSource, cell.Row) Then
+                    If cell.row >= tableStartRow And Not IsRowEmpty(wsSource, cell.row) Then
                         Set newRow = newTable.ListRows.Add
                         For i = 1 To tableObj.ListColumns.Count
                             header = tableObj.ListColumns(i).Name
                             If headerMapping.Exists(header) Then
-                                newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.Row, i).Value
+                                newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.row, i).Value
                             End If
                         Next i
                     End If
@@ -356,4 +356,6 @@ ErrHandler:
     Exit Sub
     
 End Sub
+
+
 

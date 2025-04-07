@@ -1,32 +1,32 @@
 '=======================================================================
 ' Subroutine: CreateCoordinatorTabs
-' Version: 1.6.4
+' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
-'   This subroutine automates the process of creating coordinator-specific 
-'   tabs in the workbook. It first gathers the necessary data from the 
-'   "Coordinadores" table in the "Colaboradores" sheet. For each valid 
-'   coordinator, it creates a new tab by copying a template sheet and 
-'   renaming it according to the coordinator's name. The subroutine then 
-'   populates the new tabs with relevant data from the "Coordinadores" table, 
-'   including the coordinator's alias, and applies filters to include only 
-'   the relevant data for each coordinator. It also copies common values 
+'   This subroutine automates the process of creating coordinator-specific
+'   tabs in the workbook. It first gathers the necessary data from the
+'   "Coordinadores" table in the "Colaboradores" sheet. For each valid
+'   coordinator, it creates a new tab by copying a template sheet and
+'   renaming it according to the coordinator's name. The subroutine then
+'   populates the new tabs with relevant data from the "Coordinadores" table,
+'   including the coordinator's alias, and applies filters to include only
+'   the relevant data for each coordinator. It also copies common values
 '   (e.g., "razonSocial", "periodoDelPagoDel") to the new tabs.
 ' Parameters:
 '   - None
 ' Returns:
 '   - None
 ' Notes:
-'   - This subroutine creates a new tab for each unique coordinator by 
-'     copying a template and renaming it to the coordinator's name, ensuring 
+'   - This subroutine creates a new tab for each unique coordinator by
+'     copying a template and renaming it to the coordinator's name, ensuring
 '     the name is valid and doesn't exceed Excel's name length limitations.
 '   - The coordinator names are sanitized to ensure they are valid sheet names.
-'   - It applies a filter to the data based on the coordinator name and 
+'   - It applies a filter to the data based on the coordinator name and
 '     copies the filtered data to the newly created tab.
-'   - The process includes sorting the coordinator names and copying shared 
+'   - The process includes sorting the coordinator names and copying shared
 '     values to the new sheets (e.g., "razonSocial", "periodoDelPagoDel").
-'   - The subroutine also handles errors when no coordinators are found or 
+'   - The subroutine also handles errors when no coordinators are found or
 '     if no matches are found for a coordinator's alias.
 '=======================================================================
 
@@ -238,12 +238,12 @@ Sub CreateCoordinatorTabs()
 
             ' Loop through filtered rows
             For Each cell In visibleCells.Columns(1).Cells
-            If cell.Row >= tableStartRow And Not IsRowEmpty(wsSource, cell.Row) Then
+            If cell.row >= tableStartRow And Not IsRowEmpty(wsSource, cell.row) Then
                     Set newRow = newTable.ListRows.Add
                     For i = 1 To tableObj.ListColumns.Count
                         header = tableObj.ListColumns(i).Name
                         If headerMapping.Exists(header) Then
-                        newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.Row, i).Value
+                        newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.row, i).Value
                     End If
                 Next i
             End If
@@ -271,3 +271,5 @@ Sub CreateCoordinatorTabs()
         End If
     Next ws
 End Sub
+
+
