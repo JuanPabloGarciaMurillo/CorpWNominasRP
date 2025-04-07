@@ -1,15 +1,44 @@
 '=======================================================================
-' Script: CreatePromotorTabs
-' Version: 1.6.3
+' Subroutine: CreatePromotorTabs
+' Version: 1.6.4
 ' Author: Juan Pablo Garcia Murillo
-' Date: 03/30/2025
+' Date: 04/06/2025
 ' Description:
-'   This script automates the creation of new worksheet tabs for each unique Promotor found in a source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Promotor tabs while maintaining a predefined template format.
-'
-'   The script ensures that data is not duplicated by clearing existing records in the Promotor-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, maintains structured header mappings for accurate data placement, and performs an automatic lookup to fetch the full Promotor name from a reference sheet.
+'   This subroutine automates the process of creating individual tabs for each 
+'   promotor in the workbook. It collects unique promotor names from the 
+'   "Promotores" table in the "Colaboradores" sheet and checks if each 
+'   promotor has a corresponding entry in the "Sueldos_Base" table in the 
+'   "Tabuladores" sheet. If the promotor exists in the "Sueldos_Base" table, 
+'   the subroutine creates a new sheet for that promotor by copying a template 
+'   sheet and renaming it according to the promotor's name. The subroutine 
+'   then populates the new tabs with relevant data from the "Promotores" table 
+'   and applies filters to include only the relevant data for each promotor. 
+'   Common values from the source sheet (e.g., "razonSocial", "periodoDelPagoDel") 
+'   are also copied into all the new tabs.
+' Parameters:
+'   - None
+' Returns:
+'   - None
+' Notes:
+'   - The subroutine creates a new tab for each promotor by copying a template 
+'     and renaming it to the promotor's name, ensuring the name is valid.
+'   - It first checks for each promotor's base salary entry in the "Sueldos_Base" 
+'     table and only creates tabs for those with a valid match.
+'   - The promotor names are sanitized to ensure they are valid sheet names 
+'     (e.g., replacing invalid characters with underscores).
+'   - The subroutine automatically sorts the "Promotor" column in ascending order 
+'     before processing the rows.
+'   - If no valid promotors are found, an error message is displayed.
+'   - Filters are applied to each promotor's data, and new tabs are populated 
+'     with filtered rows.
+'   - After creating the tabs, common values from the source sheet are pasted 
+'     into corresponding cells in each new tab.
+'   - The original visibility state of the sheets is preserved, with only the 
+'     newly created tabs visible.
 '=======================================================================
 
-Sub CreatePromotorTabs()
+
+Public Sub CreatePromotorTabs()
     On Error GoTo ErrHandler
     Debug.Print "Entering CreatePromotorTabs..."
     Dim wsSource    As Worksheet
@@ -94,6 +123,7 @@ Sub CreatePromotorTabs()
     ' Define the range for the "Promotor" column (from row 9 to the last data row)
     Set promotorColumn = wsSource.Range("A" & tableStartRow & ":A" & lastDataRow)
     
+    '''''''''''''''''''''''''
     Debug.Print "Entering Base Salary promotor sheet functionality"
     ' Loop through the filtered Promotores and find Tabulador data
     coordinatorName = wsSource.Name
@@ -106,11 +136,11 @@ Sub CreatePromotorTabs()
         If Trim(UCase(promotorCoord)) = Trim(UCase(coordinatorName)) Then
             
             ' Search for the Promotor in the Tabuladores table (Sueldos_Base)
-            promotorMatch = FALSE
+            promotorMatch = False
             For Each tabuladorRow In baseSalaryTable.ListRows
                 ' Check if Promotor matches Tabulador COLABORADOR
                 If tabuladorRow.Range.Cells(1, baseSalaryTable.ListColumns("COLABORADOR").Index).Value = baseSalaryPromotorName Then
-                    promotorMatch = TRUE
+                    promotorMatch = True
                     promotorDict.Add baseSalaryPromotorAlias, Nothing
                     Exit For
                 End If
@@ -121,13 +151,14 @@ Sub CreatePromotorTabs()
     
     Debug.Print "Exiting CreateBaseSalaryTabsIfMissing..."
     
+    '''''''''''''''''''''''''
     ' Collect unique promotor names (skip header row)
     ' Loop through the "Promotor" column to collect unique values from the table only
     For Each cell In promotorColumn
         promotorName = Trim(cell.Value)
         
         ' Check if the cell has a valid promotor name and it's not already in the dictionary
-        If promotorName <> "" And promotorName <> "PROMOTOR" And Not promotorDict.exists(promotorName) Then
+        If promotorName <> "" And promotorName <> "PROMOTOR" And Not promotorDict.Exists(promotorName) Then
             promotorDict.Add promotorName, Nothing
         End If
     Next cell
@@ -139,9 +170,9 @@ Sub CreatePromotorTabs()
     End If
     
     ' Turn off screen updating and automatic calculation for performance
-    Application.ScreenUpdating = FALSE
+    Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
-    Application.CutCopyMode = FALSE
+    Application.CutCopyMode = False
     
     ' Apply sorting to "Promotor" column
     ' Sort the "Promotor" column in ascending order (A-Z)
@@ -299,14 +330,14 @@ Sub CreatePromotorTabs()
     Next promotorName
     
     ' Clean up
-    Application.CutCopyMode = FALSE
-    wsSource.AutoFilterMode = FALSE
+    Application.CutCopyMode = False
+    wsSource.AutoFilterMode = False
     
     ' Restore the original filter state in the active sheet
     tableObj.Range.AutoFilter Field:=1
     
     ' Restore screen updating and automatic calculation
-    Application.ScreenUpdating = TRUE
+    Application.ScreenUpdating = True
     Application.Calculation = xlCalculationAutomatic
     
     ' Hide the sheets back to their original state, excluding new tabs
@@ -316,12 +347,13 @@ Sub CreatePromotorTabs()
         End If
     Next ws
     
-    ErrHandler:
+ErrHandler:
     If Err.Number <> 0 Then
         MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "CreatePromotorTabs"
     End If
-    Application.ScreenUpdating = TRUE
+    Application.ScreenUpdating = True
     Application.Calculation = xlCalculationAutomatic
     Exit Sub
     
 End Sub
+

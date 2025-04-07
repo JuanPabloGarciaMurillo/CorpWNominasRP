@@ -1,14 +1,37 @@
 '=======================================================================
-' Script: CreateCoordinatorTabs
-' Version: 1.6.3
+' Subroutine: CreateCoordinatorTabs
+' Version: 1.6.4
 ' Author: Juan Pablo Garcia Murillo
-' Date: 03/30/2025
+' Date: 04/06/2025
 ' Description:
-'   This script automates the creation of new worksheet tabs for each unique Coordinator found in a source table. It extracts data from the active sheet, applies necessary transformations, and populates the corresponding Coordinator tabs while maintaining a predefined template format.
-'
-'   The script ensures that data is not duplicated by clearing existing records in the Coordinator-specific tables before inserting fresh data. Additionally, it manages sheet visibility, prevents invalid sheet names, and maintains structured header mappings for accurate data placement, and performs an automatic lookup to fetch the full Coordinador name from a reference sheet.
+'   This subroutine automates the process of creating coordinator-specific 
+'   tabs in the workbook. It first gathers the necessary data from the 
+'   "Coordinadores" table in the "Colaboradores" sheet. For each valid 
+'   coordinator, it creates a new tab by copying a template sheet and 
+'   renaming it according to the coordinator's name. The subroutine then 
+'   populates the new tabs with relevant data from the "Coordinadores" table, 
+'   including the coordinator's alias, and applies filters to include only 
+'   the relevant data for each coordinator. It also copies common values 
+'   (e.g., "razonSocial", "periodoDelPagoDel") to the new tabs.
+' Parameters:
+'   - None
+' Returns:
+'   - None
+' Notes:
+'   - This subroutine creates a new tab for each unique coordinator by 
+'     copying a template and renaming it to the coordinator's name, ensuring 
+'     the name is valid and doesn't exceed Excel's name length limitations.
+'   - The coordinator names are sanitized to ensure they are valid sheet names.
+'   - It applies a filter to the data based on the coordinator name and 
+'     copies the filtered data to the newly created tab.
+'   - The process includes sorting the coordinator names and copying shared 
+'     values to the new sheets (e.g., "razonSocial", "periodoDelPagoDel").
+'   - The subroutine also handles errors when no coordinators are found or 
+'     if no matches are found for a coordinator's alias.
 '=======================================================================
 
+' Declare newTabs at the module level
+Public newTabs As Collection
 Sub CreateCoordinatorTabs()
     Dim wsSource As Worksheet
     Dim templateSheet As Worksheet
@@ -25,7 +48,7 @@ Sub CreateCoordinatorTabs()
     Dim i As Integer
     Dim ws As Worksheet
     Dim sheetState As Object ' To store the visibility status of each sheet
-    Dim newTabs As Collection ' To track newly created tabs
+
     Dim headerMapping As Object
     Dim header As String
 
