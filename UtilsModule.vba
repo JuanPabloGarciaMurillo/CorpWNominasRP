@@ -1,6 +1,5 @@
 '=======================================================================
 ' Script: UtilsModule
-' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
@@ -307,13 +306,13 @@ End Function
 '=========================================================================
 ' Function: RenameGerenteTabToAlias
 ' Description:
-'   Renames the active Gerente sheet based on the value in cell B2
+'   Renames the active Gerente sheet based on the value in cell B1
 '   (Nombre_Gerente), using the ALIAS from the "Gerentes" table on
 '   the "Colaboradores" sheet.
 ' Returns:
 '   - True if renamed successfully, False otherwise.
 ' Notes:
-'   - Cell B2 must match a value in Gerentes[NOMBRE].
+'   - Cell B1 must match a value in Gerentes[NOMBRE].
 '   - Prevents renaming if the alias already exists as a sheet.
 '=========================================================================
 
@@ -327,7 +326,7 @@ Function RenameGerenteTabToAlias() As Boolean
     nombreGerente = Trim(wsActive.Range("B1").Value)
 
     If nombreGerente = "" Then
-        MsgBox "B2 (Nombre_Gerente) is empty.", vbExclamation, "RenameGerenteTabToAlias"
+        MsgBox "B1 (Nombre_Gerente) is empty.", vbExclamation, "RenameGerenteTabToAlias"
         Exit Function
     End If
 
@@ -349,7 +348,7 @@ Function RenameGerenteTabToAlias() As Boolean
                     RenameGerenteTabToAlias = True
                     Exit Function
                 Else
-                    MsgBox "Cannot rename: A sheet named '" & aliasName & "' already exists.", vbExclamation
+                    ' MsgBox "Cannot rename: A sheet named '" & aliasName & "' already exists.", vbExclamation
                     Exit Function
                 End If
             End If

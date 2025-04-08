@@ -1,5 +1,6 @@
 '=======================================================================
 ' Subroutine: CreateCoordinatorTabs
+' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
@@ -46,18 +47,20 @@ Sub CreateCoordinatorTabs()
     Dim invalidChars As Variant
     Dim i As Integer
     Dim ws As Worksheet
-    Dim sheetState As Object
+    Dim sheetState As Object ' To store the visibility status of each sheet
+
     Dim headerMapping As Object
     Dim header As String
 
+    ' Set source and template sheets
     ' Set the source sheet as the active sheet where the button is clicked
-    Set wsSource = ActiveSheet
-    Set templateSheet = ThisWorkbook.Sheets("Ejemplo Coordinacion")
+    Set wsSource = ActiveSheet ' Now dynamically set to the active sheet
+    Set templateSheet = ThisWorkbook.Sheets("Ejemplo Coordinacion") ' The sheet to be copied
 
     ' Create a dictionary to store the visibility status of sheets
     Set sheetState = CreateObject("Scripting.Dictionary")
-    Set newTabs = New Collection
-    Set headerMapping = CreateObject("Scripting.Dictionary")
+    Set newTabs = New Collection ' Initialize collection to track new tabs
+    Set headerMapping = CreateObject("Scripting.Dictionary") ' Initialize the header mapping dictionary
     Set coordDict = CreateObject("Scripting.Dictionary")
 
     ' Define header mapping between source and new tab, excluding "COMISION" and "PAGO")
@@ -81,24 +84,25 @@ Sub CreateCoordinatorTabs()
     Next ws
 
     ' Set the table range using ListObjects (Excel table object)
-    Set tableObj = wsSource.ListObjects(1)
+    Set tableObj = wsSource.ListObjects(1) ' Assuming there's only one table in the sheet
 
     ' Define the start row for the table
-    tableStartRow = 9
+    tableStartRow = 9 ' Table data starts from row 9 (skip header row)
 
     ' Get the last row of the table data (excluding Totals Row)
-    lastDataRow = tableObj.ListRows.Count + tableStartRow - 1
+    lastDataRow = tableObj.ListRows.Count + tableStartRow - 1 ' Subtracting 1 to exclude the Totals Row
     
     ' Define the range for the "Coordinador" column (from row 9 to the last data row)
     Set coordColumn = wsSource.Range("A" & tableStartRow & ":A" & lastDataRow)
 
+    ' Collect unique coordinator names (skip header row)
     ' Loop through the "Coordinador" column to collect unique values from the table only
     For Each cell In coordColumn
-        coordName = Trim(cell.Value)
+        coordName = Trim(cell.Value) ' Trim spaces from coordinator name
 
         ' Check if the cell has a valid coordinator name and it's not already in the dictionary
         If coordName <> "" And coordName <> "COORDINADOR" And Not coordDict.Exists(coordName) Then
-            coordDict.Add coordName, Nothing
+            coordDict.Add coordName, Nothing ' Add unique coordinator to the dictionary
         End If
     Next cell
 
@@ -113,6 +117,7 @@ Sub CreateCoordinatorTabs()
     Application.Calculation = xlCalculationManual
     Application.CutCopyMode = False
 
+    ' Apply sorting to "Coordinador" column
     ' Sort the "Coordinador" column in ascending order (A-Z)
     tableObj.Sort.SortFields.Clear
     tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
@@ -156,7 +161,7 @@ Sub CreateCoordinatorTabs()
 
             ' Ensure correct table reference in copied sheet
             Dim newTable As ListObject
-            Set newTable = newTab.ListObjects(1)
+            Set newTable = newTab.ListObjects(1) ' Get the table in the copied sheet
     
             ' Perform the lookup to get the corresponding "NOMBRE" for the "COORDINADOR"
             Dim aliasRange As Range
@@ -165,7 +170,7 @@ Sub CreateCoordinatorTabs()
             Dim wsColaboradores As Worksheet
     
             ' Assuming "Colaboradores" is the sheet containing the coordinators table
-            Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
+            Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores") ' Replace with actual sheet name
     
             ' Set the range for ALIAS and NOMBRE columns (the table's actual range)
             Set aliasRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("ALIAS").DataBodyRange
@@ -174,18 +179,18 @@ Sub CreateCoordinatorTabs()
             ' Perform lookup using Application.Match instead of WorksheetFunction.Lookup
             On Error Resume Next
             Dim matchRow As Long
-            matchRow = Application.Match(coordName, aliasRange, 0)
+            matchRow = Application.Match(coordName, aliasRange, 0) ' Find the row where the coordinator matches
             
             If Not IsError(matchRow) Then
                 ' If a match is found, get the corresponding NOMBRE
                 coordAlias = nameRange.Cells(matchRow, 1).Value
             Else
-                coordAlias = "Unknown Coordinator"
+                coordAlias = "Unknown Coordinator" ' If no match, set default value
             End If
             On Error GoTo 0
     
             ' Paste the found coordinator name (or default) into cell B1 (merged B1:D1) in the new tab
-            newTab.Range("B1:D1").Value = coordAlias
+            newTab.Range("B1:D1").Value = coordAlias ' Place the value in the merged range B1:D1
     
             ' No filter is applied to the new tab, only the active sheet table
         End If
@@ -213,7 +218,7 @@ Sub CreateCoordinatorTabs()
         ' Auto-fit columns after pasting data
         newTab.Cells.EntireColumn.AutoFit
     Next coordName
-
+'
     ' Loop through the filtered rows (only visible rows for each coordinator) and copy the filtered data
     Dim visibleCells As Range, newRow As ListRow
 
@@ -249,11 +254,11 @@ Sub CreateCoordinatorTabs()
         End If
 
         ' Ensure correct table reference in copied or existing sheet
-        Set newTable = newTab.ListObjects(1) 
+        Set newTable = newTab.ListObjects(1) ' Get the table in the copied/existing sheet
 
         ' Set the table name based on the coordinator's name
         Dim newTableName As String
-        newTableName = "Tabla_Coordinador" & Replace(coordName, " ", "_")
+        newTableName = "TablaCoordinador" & Replace(coordName, " ", "_")
 
         ' Change the table name
         On Error Resume Next
@@ -281,13 +286,13 @@ Sub CreateCoordinatorTabs()
         newTab.Cells.EntireColumn.AutoFit
         End If
     Next coordName
-
+'
     ' Clean up
     Application.CutCopyMode = False
-    wsSource.AutoFilterMode = False
+    wsSource.AutoFilterMode = False ' Reset filter mode in the source sheet
 
     ' Restore the original filter state in the active sheet
-    tableObj.Range.AutoFilter Field:=1
+    tableObj.Range.AutoFilter Field:=1 ' Apply the original filter in the active sheet
 
     ' Restore screen updating and automatic calculation
     Application.ScreenUpdating = True
@@ -296,7 +301,7 @@ Sub CreateCoordinatorTabs()
     ' Hide the sheets back to their original state, excluding new tabs
     For Each ws In ThisWorkbook.Sheets
         If Not IsInNewTabs(ws.Name, newTabs) Then
-            ws.Visible = sheetState(ws.Name)
+            ws.Visible = sheetState(ws.Name) ' Restore visibility based on the stored state
         End If
     Next ws
 End Sub

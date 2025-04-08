@@ -1,6 +1,5 @@
 '=======================================================================
 ' Subroutine: SumPagoNetoGerencia
-' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:

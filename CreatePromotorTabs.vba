@@ -1,6 +1,5 @@
 '=======================================================================
 ' Subroutine: CreatePromotorTabs
-' Version: 1.6.5
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
@@ -123,7 +122,6 @@ Public Sub CreatePromotorTabs()
     ' Define the range for the "Promotor" column (from row 9 to the last data row)
     Set promotorColumn = wsSource.Range("A" & tableStartRow & ":A" & lastDataRow)
     
-    '''''''''''''''''''''''''
     Debug.Print "Entering Base Salary promotor sheet functionality"
     ' Loop through the filtered Promotores and find Tabulador data
     coordinatorName = wsSource.Name
@@ -151,8 +149,6 @@ Public Sub CreatePromotorTabs()
     
     Debug.Print "Exiting CreateBaseSalaryTabsIfMissing..."
     
-    '''''''''''''''''''''''''
-    ' Collect unique promotor names (skip header row)
     ' Loop through the "Promotor" column to collect unique values from the table only
     For Each cell In promotorColumn
         promotorName = Trim(cell.Value)
@@ -174,7 +170,6 @@ Public Sub CreatePromotorTabs()
     Application.Calculation = xlCalculationManual
     Application.CutCopyMode = False
     
-    ' Apply sorting to "Promotor" column
     ' Sort the "Promotor" column in ascending order (A-Z)
     tableObj.Sort.SortFields.Clear
     tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
@@ -219,7 +214,7 @@ Public Sub CreatePromotorTabs()
             Dim newTable As ListObject
             Set newTable = newTab.ListObjects(1)
             Dim newTableName As String
-            newTableName = "TablaPromotor_" & Replace(promotorName, " ", "_")
+            newTableName = "Tabla_Promotor" & Replace(promotorName, " ", "_")
             On Error Resume Next
             newTable.Name = newTableName
             On Error GoTo 0
@@ -277,7 +272,7 @@ Public Sub CreatePromotorTabs()
         ' Auto-fit columns after pasting data
         newTab.Cells.EntireColumn.AutoFit
     Next promotorName
-    '
+
     ' Loop through the filtered rows (only visible rows for each promotor) and copy the filtered data
     Dim visibleCells As Range, newRow As ListRow
     
