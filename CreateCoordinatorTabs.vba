@@ -3,302 +3,363 @@
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/06/2025
 ' Description:
-'   This subroutine automates the process of creating coordinator-specific
-'   tabs in the workbook. It first gathers the necessary data from the
-'   "Coordinadores" table in the "Colaboradores" sheet. For each valid
-'   coordinator, it creates a new tab by copying a template sheet and
-'   renaming it according to the coordinator's name. The subroutine then
-'   populates the new tabs with relevant data from the "Coordinadores" table,
-'   including the coordinator's alias, and applies filters to include only
-'   the relevant data for each coordinator. It also copies common values
-'   (e.g., "razonSocial", "periodoDelPagoDel") to the new tabs.
+'   This subroutine automates the process of creating coordinator-specific tabs in the workbook. It first gathers the necessary data from the "Coordinadores" table in the "Colaboradores" sheet. For each valid coordinator, it creates a new tab by copying a template sheet and renaming it according to the coordinator's name. The subroutine then populates the new tabs with relevant data from the "Coordinadores" table, including the coordinator's alias, and applies filters to include only the relevant data for each coordinator. It also copies common value (e.g., "razonSocial", "periodoDelPagoDel") to the new tabs.
 ' Parameters:
 '   - None
 ' Returns:
 '   - None
 ' Notes:
-'   - This subroutine creates a new tab for each unique coordinator by
-'     copying a template and renaming it to the coordinator's name, ensuring
-'     the name is valid and doesn't exceed Excel's name length limitations.
+'   - This subroutine creates a new tab for each unique coordinator by copying a template and renaming it to the coordinator's name, ensuring the name is valid and doesn't exceed Excel's name length limitations.
 '   - The coordinator names are sanitized to ensure they are valid sheet names.
-'   - It applies a filter to the data based on the coordinator name and
-'     copies the filtered data to the newly created tab.
-'   - The process includes sorting the coordinator names and copying shared
-'     values to the new sheets (e.g., "razonSocial", "periodoDelPagoDel").
-'   - The subroutine also handles errors when no coordinators are found or
-'     if no matches are found for a coordinator's alias.
+'   - It applies a filter to the data based on the coordinator name and copies the filtered data to the newly created tab.
+'   - The process includes sorting the coordinator names and copying shared values to the new sheets (e.g., "razonSocial", "periodoDelPagoDel").
+'   - The subroutine also handles errors when no coordinators are found or if no matches are found for a coordinator's alias.
 '=======================================================================
 
 ' Declare newTabs at the module level
-Public newTabs As Collection
+Public newTabs      As Collection
 Sub CreateCoordinatorTabs()
-    Dim wsSource As Worksheet
+    On Error GoTo ErrHandler
+    
+    Dim wsSource    As Worksheet
     Dim templateSheet As Worksheet
-    Dim coordName As Variant
-    Dim lastRow As Long
-    Dim coordDict As Object
-    Dim newTab As Worksheet
-    Dim cell As Range
-    Dim coordColumn As Range
+    Dim coordName   As Variant
+    Dim coordKeys   As Collection
+    Dim newTab      As Worksheet
+    Dim cell        As Range
     Dim tableStartRow As Long
-    Dim tableObj As ListObject
+    Dim tableObj    As ListObject
     Dim lastDataRow As Long
-    Dim invalidChars As Variant
-    Dim i As Integer
-    Dim ws As Worksheet
-    Dim sheetState As Object
-    Dim headerMapping As Object
-    Dim header As String
-
+    Dim i           As Integer
+    Dim ws          As Worksheet
+    Dim sheetState  As Collection
+    Dim headerMapping As clsDictionary
+    Dim header      As String
+    Dim gerenteNombre As String
+    Dim gerenteAlias As String
+    Dim wsColaboradores As Worksheet
+    Dim gerentesTbl As ListObject
+    Dim coordTbl    As ListObject
+    Dim foundRow    As Range
+    Dim iRow        As ListRow
+    Dim coordAlias  As Variant
+    Dim headers     As Variant
+    Dim columnIndex As Variant
+    Dim idx         As Integer
+    
+    Set coordKeys = New Collection
+    Set headerMapping = New clsDictionary
+    
     ' Set the source sheet as the active sheet where the button is clicked
     Set wsSource = ActiveSheet
     Set templateSheet = ThisWorkbook.Sheets("Ejemplo Coordinacion")
-
+    
     ' Create a dictionary to store the visibility status of sheets
-    Set sheetState = CreateObject("Scripting.Dictionary")
+    Set sheetState = New Collection
     Set newTabs = New Collection
-    Set headerMapping = CreateObject("Scripting.Dictionary")
-    Set coordDict = CreateObject("Scripting.Dictionary")
-
-    ' Define header mapping between source and new tab, excluding "COMISION" and "PAGO")
-    headerMapping.Add "PROMOTOR", 1
-    headerMapping.Add "CREDENCIAL", 2
-    headerMapping.Add "NOMBRE DEL ALUMNO", 3
-    ' Skipping "COMISION" (no entry for it)
-    headerMapping.Add "PLANTEL", 5
-    headerMapping.Add "CURSO", 6
-    headerMapping.Add "GRUPO", 7
-    ' Skipping "PAGO" (no entry for it)
-    headerMapping.Add "FECHA", 9
-    headerMapping.Add "TS PLANTEL", 10
-    headerMapping.Add "TS CREDENCIAL", 11
-
+    
+    ' Add header mappings with sanitized keys
+    
+    ' Define headers and their corresponding column indices
+    headers = Array("PROMOTOR", "CREDENCIAL", "NOMBRE DEL ALUMNO", "PLANTEL", "CURSO", "GRUPO", "FECHA", "TS PLANTEL", "TS CREDENCIAL")
+    columnIndex = Array(1, 2, 3, 5, 6, 7, 9, 10, 11)
+    
+    ' Loop through the headers and add them to the dictionary
+    For idx = LBound(headers) To UBound(headers)
+        If Not headerMapping.Exists(CStr(headers(idx))) Then
+            headerMapping.Add CStr(headers(idx)), columnIndex(idx)
+        End If
+    Next idx
+    
     ' Unhide all sheets and store their original state (hidden or visible)
     For Each ws In ThisWorkbook.Sheets
-        ' Store visibility state
-        sheetState.Add ws.Name, ws.Visible
+        ' Ensure ws.Name is unique and ws.Visible is valid
+        If Not headerMapping.Exists(ws.Name) Then
+            sheetState.Add ws.Visible, ws.Name
+        Else
+        End If
         ws.Visible = xlSheetVisible
     Next ws
-
+    
     ' Set the table range using ListObjects (Excel table object)
     Set tableObj = wsSource.ListObjects(1)
-
+    
     ' Define the start row for the table
     tableStartRow = 9
-
+    
     ' Get the last row of the table data (excluding Totals Row)
     lastDataRow = tableObj.ListRows.Count + tableStartRow - 1
     
-    ' Define the range for the "Coordinador" column (from row 9 to the last data row)
-    Set coordColumn = wsSource.Range("A" & tableStartRow & ":A" & lastDataRow)
-
-    ' Loop through the "Coordinador" column to collect unique values from the table only
-    For Each cell In coordColumn
-        coordName = Trim(cell.Value)
-
-        ' Check if the cell has a valid coordinator name and it's not already in the dictionary
-        If coordName <> "" And coordName <> "COORDINADOR" And Not coordDict.Exists(coordName) Then
-            coordDict.Add coordName, Nothing
-        End If
-    Next cell
-
-    ' Prevent errors if no coordinators are found
-    If coordDict.Count = 0 Then
-        MsgBox "No valid coordinators found.", vbExclamation, "Error"
+    Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
+    Set gerentesTbl = wsColaboradores.ListObjects("Gerentes")
+    Set coordTbl = wsColaboradores.ListObjects("Coordinadores")
+    
+    ' Get manager's name from B1:D1
+    gerenteNombre = Trim(wsSource.Range("B1").Value)
+    
+    ' Find the alias for the manager
+    On Error Resume Next
+    Set foundRow = gerentesTbl.ListColumns("NOMBRE").DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
+    On Error GoTo 0
+    
+    If Not foundRow Is Nothing Then
+        gerenteAlias = foundRow.Offset(0, 1).Value
+    Else
+        MsgBox "El Gerente '" & gerenteNombre & "' no se encuentra en la tabla de Gerentes.", vbExclamation
         Exit Sub
     End If
-
-    ' Turn off screen updating and automatic calculation for performance
-    Application.ScreenUpdating = False
-    Application.Calculation = xlCalculationManual
-    Application.CutCopyMode = False
-
-    ' Sort the "Coordinador" column in ascending order (A-Z)
-    tableObj.Sort.SortFields.Clear
-    tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
-        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
-    tableObj.Sort.Apply
-
-    ' Define invalid characters for sheet names
-    invalidChars = Array("\", "/", "?", "*", "[", "]")
-
-    ' Iterate over unique coordinators and create new tabs
-    For Each coordName In coordDict.Keys
-        ' Sanitize coordinator name to be a valid sheet name
-        For i = LBound(invalidChars) To UBound(invalidChars)
-            coordName = Replace(coordName, invalidChars(i), "_")
-        Next i
-
-        ' Ensure the name doesn't exceed 31 characters
-        If Len(coordName) > 31 Then
-            coordName = Left(coordName, 31)
+    
+    ' Use a dictionary to track unique coordinators
+    Dim uniqueKeys  As Object
+    Set uniqueKeys = New clsDictionary
+    
+    ' Add coordinators from the "Coordinadores" table where GERENCIA = gerenteAlias
+    For Each iRow In coordTbl.ListRows
+        If Trim(iRow.Range(1, 3).Value) = gerenteAlias Then        ' Column 3 = GERENCIA
+        coordAlias = Trim(CStr(iRow.Range(1, 2).Value))        ' Column 2 = ALIAS
+        If CStr(coordAlias) <> "" And Not uniqueKeys.Exists(CStr(coordAlias)) Then
+            uniqueKeys.Add CStr(coordAlias), CStr(coordAlias)
         End If
+    End If
+Next iRow
 
-        ' Check if sheet already exists
-        On Error Resume Next
-        Set ws = ThisWorkbook.Sheets(coordName)
-        On Error GoTo 0
+' Add unique coordinators from uniqueKeys to coordKeys
+Dim key             As Variant
+For Each key In uniqueKeys.GetKeys
+    coordKeys.Add key
+Next key
 
-        ' If sheet doesn't exist, create it by copying the template
-        If ws Is Nothing Then
-            ' Copy the template sheet to the end of the workbook
-            templateSheet.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+' Prevent errors if no coordinators are found
+If coordKeys.Count = 0 Then
+    MsgBox "No se encontraron coordinadores validos.", vbExclamation, "Error"
+    Exit Sub
+End If
 
-            ' Set the newly created sheet as newTab
-            Set newTab = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
-            newTab.Name = coordName
+If tableObj.ListRows.Count = 0 Then
+    Exit Sub
+End If
 
-            ' Explicitly set the new tab to visible right after creation
-            newTab.Visible = xlSheetVisible
+' Turn off screen updating and automatic calculation for performance
+Application.ScreenUpdating = FALSE
+Application.Calculation = xlCalculationManual
 
-            ' Track the newly created tab
-            newTabs.Add newTab.Name
+' Sort the "Coordinador" column in ascending order (A-Z)
+tableObj.Sort.SortFields.Clear
+tableObj.Sort.SortFields.Add key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
+                             SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
+tableObj.Sort.Apply
 
-            ' Ensure correct table reference in copied sheet
-            Dim newTable As ListObject
-            Set newTable = newTab.ListObjects(1)
+' Iterate over unique coordinators and create new tabs
+For Each coordName In coordKeys
+    ' Sanitize coordinator name using the helper function
+    coordName = SanitizeSheetName(coordName)
     
-            ' Perform the lookup to get the corresponding "NOMBRE" for the "COORDINADOR"
-            Dim aliasRange As Range
-            Dim nameRange As Range
-            Dim coordAlias As Variant
-            Dim wsColaboradores As Worksheet
+    ' Check if sheet already exists
+    On Error Resume Next
+    Set ws = ThisWorkbook.Sheets(coordName)
+    On Error GoTo 0
     
-            ' Assuming "Colaboradores" is the sheet containing the coordinators table
-            Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
-    
-            ' Set the range for ALIAS and NOMBRE columns (the table's actual range)
-            Set aliasRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("ALIAS").DataBodyRange
-            Set nameRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("NOMBRE").DataBodyRange
-    
-            ' Perform lookup using Application.Match instead of WorksheetFunction.Lookup
-            On Error Resume Next
-            Dim matchRow As Long
-            matchRow = Application.Match(coordName, aliasRange, 0)
-            
-            If Not IsError(matchRow) Then
-                ' If a match is found, get the corresponding NOMBRE
-                coordAlias = nameRange.Cells(matchRow, 1).Value
-            Else
-                coordAlias = "Unknown Coordinator"
-            End If
-            On Error GoTo 0
-    
-            ' Paste the found coordinator name (or default) into cell B1 (merged B1:D1) in the new tab
-            newTab.Range("B1:D1").Value = coordAlias
-    
-            ' No filter is applied to the new tab, only the active sheet table
-        End If
-    Next coordName
-
-    ' Copy common values to all tabs
-    Dim razonSocial As Variant, periodoDelPagoDel As Variant
-    Dim fechaDeExpedicion As Variant, periodoDelPagoAl As Variant
-    ' Get the values to copy from the active sheet (B2, B3, B6, D3)
-    razonSocial = wsSource.Range("B2").Value
-    periodoDelPagoDel = wsSource.Range("B3").Value
-    fechaDeExpedicion = wsSource.Range("B6").Value
-    periodoDelPagoAl = wsSource.Range("D3").Value
-
-    ' Now loop through each new tab and paste the values into the corresponding cells (B2, B3, B6, D3)
-    For Each coordName In newTabs
-        Set newTab = ThisWorkbook.Sheets(coordName)
+    ' If sheet doesn't exist, create it by copying the template
+    If ws Is Nothing Then
+        ' Copy the template sheet to the end of the workbook
+        templateSheet.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
         
-        ' Paste the values into the corresponding cells
-        newTab.Range("B2").Value = razonSocial
-        newTab.Range("B3").Value = periodoDelPagoDel
-        newTab.Range("B6").Value = fechaDeExpedicion
-        newTab.Range("D3").Value = periodoDelPagoAl
-
-        ' Auto-fit columns after pasting data
-        newTab.Cells.EntireColumn.AutoFit
-    Next coordName
-
-    ' Loop through the filtered rows (only visible rows for each coordinator) and copy the filtered data
-    Dim visibleCells As Range, newRow As ListRow
-
-    For Each coordName In coordDict.Keys
-        ' Apply filter for the current coordinator
-        tableObj.Range.AutoFilter Field:=1, Criteria1:=coordName
-
-        ' Get the corresponding worksheet for the coordinator
+        ' Set the newly created sheet as newTab
+        Set newTab = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+        newTab.Name = coordName
+        
+        ' Explicitly set the new tab to visible right after creation
+        newTab.Visible = xlSheetVisible
+        
+        ' Track the newly created tab
+        newTabs.Add newTab.Name
+        
+        ' Ensure correct table reference in copied sheet
+        Dim newTable As ListObject
+        Set newTable = newTab.ListObjects(1)
+        
+        ' Perform the lookup to get the corresponding "NOMBRE" for the "COORDINADOR"
+        Dim aliasRange As Range
+        Dim nameRange As Range
+        
+        ' Set the range for ALIAS and NOMBRE columns (the table's actual range)
+        Set aliasRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("ALIAS").DataBodyRange
+        Set nameRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("NOMBRE").DataBodyRange
+        
+        ' Perform lookup using Application.Match instead of WorksheetFunction.Lookup
         On Error Resume Next
-        Set visibleCells = tableObj.DataBodyRange.SpecialCells(xlCellTypeVisible)
-        On Error GoTo 0
-
-        If Not visibleCells Is Nothing Then
-        ' Check if the sheet exists
-        On Error Resume Next
-        Set newTab = ThisWorkbook.Sheets(coordName)
-        On Error GoTo 0
-
-        ' If the sheet doesn't exist, create it by copying the template
-        If newTab Is Nothing Then
-            ' Copy the template sheet to the end of the workbook
-            templateSheet.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
-
-            ' Set the newly created sheet as newTab
-            Set newTab = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
-            newTab.Name = coordName
-
-            ' Explicitly set the new tab to visible right after creation
-            newTab.Visible = xlSheetVisible
-
-            ' Track the newly created tab
-            newTabs.Add newTab.Name
+        Dim matchRow As Long
+        matchRow = Application.Match(coordName, aliasRange, 0)
+        If Not IsError(matchRow) Then
+            coordAlias = nameRange.Cells(matchRow, 1).Value
+        Else
+            coordAlias = "Unknown Coordinator"
         End If
-
-        ' Ensure correct table reference in copied or existing sheet
-        Set newTable = newTab.ListObjects(1) 
-
-        ' Set the table name based on the coordinator's name
-        Dim newTableName As String
-        newTableName = "Tabla_Coordinador" & Replace(coordName, " ", "_")
-
-        ' Change the table name
-        On Error Resume Next
-        newTable.Name = newTableName
         On Error GoTo 0
+        
+        ' Paste the found coordinator name (or default) into cell B1 (merged B1:D1) in the new tab
+        newTab.Range("B1:D1").Value = coordAlias
+        
+        ' No filter is applied to the new tab, only the active sheet table
+    End If
+Next coordName
 
-        ' If the table has rows, delete them before adding new ones
-        If newTable.ListRows.Count > 0 Then
-            newTable.DataBodyRange.Delete
-        End If
+' Copy common values to all tabs
+Dim razonSocial     As Variant, periodoDelPagoDel As Variant
+Dim fechaDeExpedicion As Variant, periodoDelPagoAl As Variant
+' Get the values to copy from the active sheet (B2, B3, B6, D3)
+razonSocial = wsSource.Range("B2").Value
+periodoDelPagoDel = wsSource.Range("B3").Value
+fechaDeExpedicion = wsSource.Range("B6").Value
+periodoDelPagoAl = wsSource.Range("D3").Value
 
-            ' Loop through filtered rows
-            For Each cell In visibleCells.Columns(1).Cells
-            If cell.Row >= tableStartRow And Not IsRowEmpty(wsSource, cell.Row) Then
-                    Set newRow = newTable.ListRows.Add
-                    For i = 1 To tableObj.ListColumns.Count
-                        header = tableObj.ListColumns(i).Name
-                        If headerMapping.Exists(header) Then
-                        newRow.Range(1, headerMapping(header)).Value = wsSource.Cells(cell.Row, i).Value
+' Now loop through each new tab and paste the values into the corresponding cells (B2, B3, B6, D3)
+For Each coordName In newTabs
+    Set newTab = ThisWorkbook.Sheets(coordName)
+    
+    ' Paste the values into the corresponding cells
+    newTab.Range("B2").Value = razonSocial
+    newTab.Range("B3").Value = periodoDelPagoDel
+    newTab.Range("B6").Value = fechaDeExpedicion
+    newTab.Range("D3").Value = periodoDelPagoAl
+    
+    ' Auto-fit columns after pasting data
+    newTab.Cells.EntireColumn.AutoFit
+Next coordName
+
+' Loop through the filtered rows (only visible rows for each coordinator) and copy the filtered data
+Dim visibleCells    As Range, newRow As ListRow
+
+For Each coordName In coordKeys
+    
+    ' Apply filter for the current coordinator
+    tableObj.Range.AutoFilter Field:=1, Criteria1:=coordName
+    
+    ' Attempt to get visible cells
+    On Error Resume Next
+    Set visibleCells = tableObj.DataBodyRange.SpecialCells(xlCellTypeVisible)
+    On Error GoTo 0
+    
+    ' Ensure visibleCells only contains rows for the current coordinator
+    Dim isValid     As Boolean
+    isValid = TRUE
+    
+    If Not visibleCells Is Nothing Then
+        For Each cell In visibleCells.Columns(1).Cells
+            If Trim(UCase(cell.Value)) <> coordName Then
+                isValid = FALSE
+                Exit For
+            End If
+        Next cell
+    Else
+        isValid = FALSE
+    End If
+    
+    If Not isValid Then
+        GoTo SkipCoordinator
+    End If
+    
+    ' Check if the sheet exists
+    On Error Resume Next
+    Set newTab = ThisWorkbook.Sheets(coordName)
+    On Error GoTo 0
+    
+    ' If the sheet doesn't exist, create it by copying the template
+    If newTab Is Nothing Then
+        ' Copy the template sheet to the end of the workbook
+        templateSheet.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+        
+        ' Set the newly created sheet as newTab
+        Set newTab = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+        newTab.Name = coordName
+        
+        ' Explicitly set the new tab to visible right after creation
+        newTab.Visible = xlSheetVisible
+        
+        ' Track the newly created tab
+        newTabs.Add newTab.Name
+    End If
+    
+    ' Ensure correct table reference in copied or existing sheet
+    Set newTable = newTab.ListObjects(1)
+    
+    ' Set the table name based on the coordinator's name
+    Dim newTableName As String
+    newTableName = "Tabla_Coordinador_" & Replace(SanitizeSheetName(coordName), " ", "_")
+    
+    ' Change the table name
+    On Error Resume Next
+    newTable.Name = newTableName
+    On Error GoTo 0
+    
+    ' Clear the table in the new tab
+    If newTable.ListRows.Count > 0 Then
+        newTable.DataBodyRange.Delete
+    End If
+    
+    For Each cell In visibleCells.Columns(1).Cells
+        If cell.Row >= tableStartRow Then
+            ' Check if the row is not empty
+            If Not IsRowEmpty(wsSource, cell.Row) Then
+                ' Add a new row to the new table
+                Set newRow = newTable.ListRows.Add
+                For i = 1 To tableObj.ListColumns.Count
+                    header = tableObj.ListColumns(i).Name
+                    If headerMapping.Exists(header) Then
+                        newRow.Range(1, headerMapping.GetValue(header)).Value = wsSource.Cells(cell.Row, i).Value
                     End If
                 Next i
             End If
-        Next cell
-        ' Auto-fit columns after inserting data
-        newTab.Cells.EntireColumn.AutoFit
         End If
-    Next coordName
+    Next cell
+    
+    ' Auto-fit columns after inserting data
+    newTab.Cells.EntireColumn.AutoFit
+    SkipCoordinator:
+    ' Continue to the next coordinator
+Next coordName
 
-    ' Clean up
-    Application.CutCopyMode = False
-    wsSource.AutoFilterMode = False
+' Clean up
+Application.CutCopyMode = FALSE
 
-    ' Restore the original filter state in the active sheet
-    tableObj.Range.AutoFilter Field:=1
+' Reset the filter
+If wsSource.AutoFilterMode Then
+    wsSource.AutoFilterMode = FALSE
+End If
 
-    ' Restore screen updating and automatic calculation
-    Application.ScreenUpdating = True
-    Application.Calculation = xlCalculationAutomatic
+' Restore the original filter state in the active sheet
+tableObj.Range.AutoFilter Field:=1
 
-    ' Hide the sheets back to their original state, excluding new tabs
+' Restore screen updating and automatic calculation
+Application.ScreenUpdating = TRUE
+Application.Calculation = xlCalculationAutomatic
+
+' Hide the sheets back to their original state, excluding new tabs
+For Each ws In ThisWorkbook.Sheets
+    If Not IsInNewTabs(ws.Name, newTabs) Then
+        ws.Visible = sheetState(ws.Name)
+    End If
+Next ws
+
+Exit Sub
+
+ErrHandler:
+    If Err.Number <> 0 Then
+        MsgBox "Error. Porfavor contacta a tu administrador " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorTabs"
+    End If
+
+    ' Restore the original visibility state of the sheets
+    On Error Resume Next
     For Each ws In ThisWorkbook.Sheets
-        If Not IsInNewTabs(ws.Name, newTabs) Then
+        If sheetState(ws.Name) <> xlSheetVisible Then
             ws.Visible = sheetState(ws.Name)
         End If
     Next ws
+    On Error GoTo 0
+
+    ' Restore application settings
+    Application.CutCopyMode = False
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Exit Sub
 End Sub
-
-

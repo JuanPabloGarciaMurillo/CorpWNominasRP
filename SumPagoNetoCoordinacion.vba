@@ -31,16 +31,19 @@ Sub SumPagoNetoCoordinacion()
     Dim lastRow As Long
     Dim nameRange As Range
     Dim sheetNames() As String
+    Dim sheetNamesCollection As Collection
     Dim i As Integer
     Dim currentSheetIncluded As Boolean
     Dim totalPagoNeto As Currency
+
+    On Error GoTo ErrorHandler
 
     Set targetSheet = ActiveSheet
     currentSheetIncluded = False
     totalPagoNeto = 0 ' Initialize sum
 
     ' Find last row in column P
-    lastRow = targetSheet.Cells(targetSheet.Rows.Count, "P").End(xlUp).row
+    lastRow = targetSheet.Cells(targetSheet.Rows.Count, "P").End(xlUp).Row
 
     ' Check if there are any sheet names listed
     If lastRow < 2 Then
@@ -50,21 +53,30 @@ Sub SumPagoNetoCoordinacion()
         Exit Sub
     End If
 
-    ' Store sheet names into an array
+    ' Store sheet names into a collection
     Set nameRange = targetSheet.Range("P2:P" & lastRow)
-    ReDim sheetNames(1 To nameRange.Cells.Count)
+    Set sheetNamesCollection = New Collection
 
-    i = 1
     For Each cell In nameRange
         If cell.Value <> "" Then
-            sheetNames(i) = cell.Value
+            ' Check if the sheet exists
+            If Not SheetExists(cell.Value) Then
+                MsgBox "Hoja '" & cell.Value & "' no existe.", vbExclamation, "Error"
+                Exit Sub
+            End If
+            sheetNamesCollection.Add cell.Value
             ' Check if the active sheet is listed
-            If cell.Value = targetSheet.Name Then
+            If UCase(cell.Value) = UCase(targetSheet.Name) Then
                 currentSheetIncluded = True
             End If
-            i = i + 1
         End If
     Next cell
+
+    ' Convert Collection to Array
+    ReDim sheetNames(1 To sheetNamesCollection.Count)
+    For i = 1 To sheetNamesCollection.Count
+        sheetNames(i) = sheetNamesCollection(i)
+    Next i
 
     ' Sum from listed sheets
     totalPagoNeto = SumPagoNetoFromSheets(sheetNames)
@@ -76,4 +88,8 @@ Sub SumPagoNetoCoordinacion()
 
     ' Store total sum in J4
     targetSheet.Range("J4").Value = totalPagoNeto
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error. Porfavor contacta a tu administrador: " & Err.Description, vbCritical, "Error"
 End Sub

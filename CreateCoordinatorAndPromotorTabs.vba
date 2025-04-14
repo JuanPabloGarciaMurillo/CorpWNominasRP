@@ -25,47 +25,49 @@
 
 Sub CreateCoordinatorAndPromotorTabs()
     On Error GoTo ErrHandler
-    Debug.Print "Starting CreateCoordinatorAndPromotorTabs..."
     
     ' Capture the sheet that activated the macro
     Dim activatingSheet As Worksheet
     Set activatingSheet = ActiveSheet
     
-    ' Run RenameGerenteTabToAlias to rename the Manager(Gerente) tab
-    Call RenameGerenteTabToAlias
-
+    ' Define the list of protected tabs
+    Dim protectedTabs As Variant
+    protectedTabs = Array("Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", activatingSheet.Name)
+    
+    ' Delete all unprotected tabs
+    Call DeleteUnprotectedTabs(protectedTabs)
+    
     ' Run CreateCoordinatorTabs to create new coordinator tabs
     Call CreateCoordinatorTabs
     
     ' Now retrieve the newTabs collection from the Utils module
-    Dim newTabs As Collection
+    Dim newTabs     As Collection
     Set newTabs = CreateCoordinatorTabs_newTabs()
     
     ' Iterate through the newly created tabs
-    Dim newTabName As Variant ' Declare as Variant (or Object)
+    Dim newTabName  As Variant        ' Declare as Variant (or Object)
     For Each newTabName In newTabs
-        Debug.Print "Running CreatePromotorTabs for " & newTabName
         
         ' Activate the new coordinator tab
         Set ws = ThisWorkbook.Sheets(newTabName)
         ws.Activate
         
         ' Run CreatePromotorTabs for the current coordinator tab
-        Call CreatePromotorTabs
+        Call CreatePromotorTabs()
         
-        Debug.Print "Finished CreatePromotorTabs for " & newTabName
     Next newTabName
+    
+    ' Delete tabs ending with "(C)"
+    Call DeleteManagerCoordinatorTab
     
     ' Call SumPagoNetoGerencia and pass the activating sheet
     Call SumPagoNetoGerencia(activatingSheet)
-    
-    Debug.Print "Finished CreateCoordinatorAndPromotorTabs."
     
     Exit Sub
     
 ErrHandler:
     If Err.Number <> 0 Then
-        MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorAndPromotorTabs"
+        Debug.Print "Error in CreateCoordinatorAndPromotorTabs: " & Err.Description
+        MsgBox "Error. Porfavor Contacta a tu administrador " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorAndPromotorTabs"
     End If
 End Sub
-

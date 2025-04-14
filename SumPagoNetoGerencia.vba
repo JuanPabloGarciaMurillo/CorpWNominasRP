@@ -19,9 +19,22 @@
 '   - The total sum is stored in cell J4 of the specified target sheet.
 '=======================================================================
 
-
 Public Sub SumPagoNetoGerencia(targetSheet As Worksheet)
-    targetSheet.Range("J4").Value = SumPagoNetoFromSheets(Empty)
+    On Error GoTo ErrorHandler
+
+    ' Validate targetSheet
+    If targetSheet Is Nothing Then
+        MsgBox "Target sheet is not valid.", vbExclamation, "Error"
+        Exit Sub
+    End If
+
+    ' Perform the calculation and store the result in cell J4
+    Dim total As Currency
+    total = SumPagoNetoFromSheets(Empty)
+    targetSheet.Range("J4").Value = total
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "An error occurred: " & Err.Description, vbCritical, "Error"
 End Sub
-
-
