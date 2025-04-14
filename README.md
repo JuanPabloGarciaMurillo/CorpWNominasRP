@@ -1,10 +1,10 @@
-# Excel Automation Suite - Version 1.7.0
+# Excel Automation Suite - Version 0.7.0
 
 ## Description
 
 The **Excel Automation Suite** is a powerful set of modular VBA scripts that streamline Excel data workflows. Designed for workbooks involving **managers (Gerentes), coordinators, and promotors**, this suite automates the creation of personalized sheets, sets up dynamic validations, manages tab visibility, and ensures data accuracy through robust utilities.
 
-Version **1.7.0** marks a major refactor: **all utility functions** were broken out of the monolithic `mod_UtilsModule` into **eight focused utility modules**, enhancing readability, reuse, and maintainability.
+Version **0.7.0** marks a major refactor: **all utility functions** were broken out of the monolithic `mod_UtilsModule` into **eight focused utility modules**, enhancing readability, reuse, and maintainability.
 
 ## Features
 
@@ -40,7 +40,7 @@ Version **1.7.0** marks a major refactor: **all utility functions** were broken 
 - Column **PROMOTOR**: Dynamically validated based on selected **Coordinador**.
 - Validation lists update automatically based on hierarchy and selection.
 
-### 6. **Modular Utility Functions (Version 1.7.0)**
+### 6. **Modular Utility Functions (Version 0.7.0)**
 
 Utility functions are now split into **8 focused modules**:
 
@@ -101,7 +101,7 @@ Each module handles a specific concern, making the codebase easier to test and e
 
 ## Version History
 
-### Version 1.7.0
+### Version 0.7.0
 
 - **Modularization Complete**: Split `mod_UtilsModule` into 8 separate modules.
 - **Improved Maintainability**: Each module is now focused and independent.
