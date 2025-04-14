@@ -8,14 +8,14 @@ Version **0.7.0** marks a major refactor: **all utility functions** were broken 
 
 ## Features
 
-### 1. **CreateCoordinatorTabs** (Version 1.6.5)
+### 1. **CreateCoordinatorTabs** (Version 0.6.5)
 
 - Creates new tabs for each unique coordinator linked to a manager.
 - Filters the `Coordinadores` table by the manager's **alias** (`B1`) from the `Gerentes` table.
 - Uses a template sheet to create each new tab.
 - Copies coordinator metadata and applies common formatting and sorting.
 
-### 2. **CreatePromotorTabs** (Version 1.6.5)
+### 2. **CreatePromotorTabs** (Version 0.6.5)
 
 - For each coordinator tab, generates tabs for associated promotors.
 - Filters promotors from the `Promotores` table based on coordinator name.
@@ -28,7 +28,7 @@ Version **0.7.0** marks a major refactor: **all utility functions** were broken 
 - Creates salary tabs **only if** they don’t already exist.
 - Ensures data integrity with no duplication.
 
-### 4. **RenameGerenteTabToAlias** (Version 1.6.5)
+### 4. **RenameGerenteTabToAlias** (Version 0.6.5)
 
 - Renames the active Gerente sheet based on the alias from the `Gerentes` table.
 - Uses the value in `B2` to perform lookup.
@@ -107,19 +107,19 @@ Each module handles a specific concern, making the codebase easier to test and e
 - **Improved Maintainability**: Each module is now focused and independent.
 - **Optimized Reuse**: Common logic now abstracted and reusable across all scripts.
 
-### Version 1.6.5
+### Version 0.6.5
 
 - Added `RenameGerenteTabToAlias`.
 - Enhanced coordinator/promotor tab creation.
 - Improved error handling, sheet naming, and table population.
 
-### Version 1.6.4
+### Version 0.6.4
 
 - Added dynamic data validation for COORDINADOR and PROMOTOR.
 - Improved data filtering and formatting.
 - Coordinators and promotors now filtered by Gerente alias.
 
-### Version 1.6.2
+### Version 0.6.2
 
 - Initial release of `CreatePromotorTabs`.
 
