@@ -32,7 +32,7 @@ Sub CreateCoordinatorAndPromotorTabs()
     
     ' Define the list of protected tabs
     Dim protectedTabs As Variant
-    protectedTabs = Array("Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", activatingSheet.Name)
+    protectedTabs = Array("Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", "Cursos", "Dashboard", "Resultados", activatingSheet.Name)
     
     ' Delete all unprotected tabs
     Call DeleteUnprotectedTabs(protectedTabs)
