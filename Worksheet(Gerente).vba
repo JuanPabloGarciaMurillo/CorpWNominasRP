@@ -5,6 +5,8 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     Dim gerenteAlias As String
     Dim validationRange As Range
     Dim managerCell As Range
+    Dim wsDashboard As Worksheet
+    Dim pivotTable As PivotTable
 
     ' Set the named range for the manager's name
     Set managerCell = Me.Range("Nombre_Gerente")
@@ -49,7 +51,18 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         
         ' Sort the table alphabetically by the first column
         Call SortTableAlphabetically(activeTable, 1)
+        
     End If
+
+    ' Refresh all pivot tables on the Dashboard sheet
+    On Error Resume Next
+    Set wsDashboard = ThisWorkbook.Sheets("Resultados")
+    If Not wsDashboard Is Nothing Then
+        For Each pivotTable In wsDashboard.PivotTables
+            pivotTable.RefreshTable
+        Next pivotTable
+    End If
+    On Error GoTo 0
 
     ' Check if the change occurred in the COORDINADOR column (column A)
     If Not Intersect(Target, Me.Columns("A")) Is Nothing Then
@@ -69,6 +82,9 @@ Private Sub Worksheet_Change(ByVal Target As Range)
 ErrorHandler:
     MsgBox "Error al actualizar la tabla Coordinadores_Gerencia_Activa: " & Err.Description & _
            vbNewLine & "Error en la fila: " & Target.row, vbCritical, "Error"
+    If Err.Number <> 0 Then
+        MsgBox "Error al actualizar la tabla Coordinadores_Gerencia_Activa o los gráficos del Dashboard: " & Err.Description, vbCritical, "Error"
+    End If
 End Sub
 
 Private Sub Worksheet_Calculate()
@@ -106,5 +122,4 @@ Private Sub Worksheet_Calculate()
 ErrorHandler:
     MsgBox "An error occurred in Worksheet_Calculate: " & Err.Description, vbCritical, "Error"
 End Sub
-
 

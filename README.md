@@ -1,10 +1,13 @@
-# Excel Automation Suite - Version 0.7.0
+# Excel Automation Suite - Version 0.8.0
 
 ## Description
 
 The **Excel Automation Suite** is a powerful set of modular VBA scripts that streamline Excel data workflows. Designed for workbooks involving **managers (Gerentes), coordinators, and promotors**, this suite automates the creation of personalized sheets, sets up dynamic validations, manages tab visibility, and ensures data accuracy through robust utilities.
 
-Version **0.7.0** marks a major refactor: **all utility functions** were broken out of the monolithic `mod_UtilsModule` into **eight focused utility modules**, enhancing readability, reuse, and maintainability.
+Version **0.8.0** introduces **reporting and visualization capabilities**:
+- Adds two new sheets: `Resultados` (Pivot Reports) and `Dashboard` (Visual Charts).
+- Automatically generates **pivot tables** by manager and builds **bar chart dashboards** for coordinators, promotors, locations, and courses.
+- Protects these sheets from cleanup and data iteration logic.
 
 ## Features
 
@@ -40,20 +43,38 @@ Version **0.7.0** marks a major refactor: **all utility functions** were broken 
 - Column **PROMOTOR**: Dynamically validated based on selected **Coordinador**.
 - Validation lists update automatically based on hierarchy and selection.
 
-### 6. **Modular Utility Functions (Version 0.7.0)**
+### 6. **Reporting and Dashboarding (NEW in Version 0.8.0)**
 
-Utility functions are now split into **8 focused modules**:
+#### 📊 Resultados (Pivot Reports)
+- Automatically generates pivot tables using the active manager's data.
+- Source data is aggregated and filtered from individual coordinator and promotor sheets.
+
+#### 📈 Dashboard (Bar Chart Visualizations)
+- Charts are created dynamically based on the pivot tables in `Resultados`.
+- Includes the following visual reports:
+  - **Ventas por Coordinación**
+  - **Ventas por Promotor**
+  - **Ventas por Plantel**
+  - **Ventas por Curso**
+  - **Ventas por Plantel por Curso**
+  - **Ventas de Cursos por Plantel**
+  - **Ventas de Coordinación por Plantel**
+
+### 7. **Modular Utility Functions & Cross-Platform Class Support (Version 0.7.0)**
+
+- Introduced a **Class Module** to encapsulate environment-specific logic (e.g., file paths, keyboard shortcuts).
+- Ensures compatibility with **both Windows and Mac**, adapting behavior based on the user's platform at runtime.
+
+Utility functions are split into **8 focused modules**:
 
 - `UtilsCollections`: Sheet existence, empty row checks, collection utilities.
 - `UtilsCoordinator`: Filters and collects coordinators by manager alias.
-- `UtilsData`: Data copying, merging, and lookup helpers.
+- `UtilsData`: Data copying, merging, and lookup helpers. (Now excludes `Resultados` and `Dashboard`)
 - `UtilsManager`: Alias lookup and name resolution for Gerentes.
 - `UtilsNumberToText`: Spanish number-to-text conversion.
 - `UtilsSheet`: Sheet creation, naming, duplication, and visibility management.
 - `UtilsTable`: Table-based filtering, sorting, and clearing.
 - `UtilsValidation`: Setup of dependent dropdowns and data validation.
-
-Each module handles a specific concern, making the codebase easier to test and extend.
 
 ## Requirements
 
@@ -66,8 +87,9 @@ Each module handles a specific concern, making the codebase easier to test and e
 1. Open the workbook in Excel.
 2. Press `Alt + F11` to open the VBA Editor.
 3. Add or update the following modules:
-   - All 8 utility modules (see Feature #6).
+   - All 8 utility modules (see Feature #7).
    - Main script modules (e.g., `CreateCoordinatorTabs`, `CreatePromotorTabs`).
+   - Reporting modules/scripts for pivot and chart creation.
 4. Ensure:
    - `Colaboradores` sheet contains `Gerentes`, `Coordinadores`, and `Promotores` tables.
    - Template sheet(s) exist and follow naming conventions.
@@ -90,6 +112,7 @@ Each module handles a specific concern, making the codebase easier to test and e
 - **Template Usage**: New sheets are created by copying from a defined template.
 - **Data Integrity**: All lookups are case-insensitive, and validations are pre-checked.
 - **Merged Cells**: Lookups only consider the first cell in merged regions (e.g., `B2:D2` → `B2`).
+- **Protected Sheets**: `Resultados` and `Dashboard` are excluded from deletion and data scanning logic.
 
 ## Example Workflow
 
@@ -97,13 +120,26 @@ Each module handles a specific concern, making the codebase easier to test and e
 2. Run `CreateCoordinatorTabs` to generate all related coordinator tabs.
 3. Run `CreatePromotorTabs` for each coordinator sheet to generate promotors.
 4. Run `CreateBaseSalaryTabsIfMissing` to generate any missing salary sheets.
-5. Use `RenameGerenteTabToAlias` to rename the original sheet based on alias.
+5. Run reporting setup to generate `Resultados` pivot tables and the `Dashboard` charts.
+6. Use `RenameGerenteTabToAlias` to rename the original sheet based on alias.
 
 ## Version History
+
+### Version 0.8.0
+
+- **New Reporting System**:
+  - Added `Resultados` sheet with pivot tables.
+  - Added `Dashboard` sheet with auto-generated bar charts.
+  - Manager-specific visual reports now available in Excel directly.
+
+- **Script Updates**:
+  - `UtilsData`: Excludes `Resultados` and `Dashboard` from manager pay calculations.
+  - `CreateCoordinatorAndPromotorTabs`: Prevents deletion of `Resultados` and `Dashboard` during cleanup.
 
 ### Version 0.7.0
 
 - **Modularization Complete**: Split `mod_UtilsModule` into 8 separate modules.
+- **Cross-Platform Support**: Introduced a **Class Module** to handle platform-specific behavior for Mac and Windows.
 - **Improved Maintainability**: Each module is now focused and independent.
 - **Optimized Reuse**: Common logic now abstracted and reusable across all scripts.
 
@@ -123,7 +159,7 @@ Each module handles a specific concern, making the codebase easier to test and e
 
 - Initial release of `CreatePromotorTabs`.
 
-### Version 1.5.7
+### Version 0.5.7
 
 - First release of `CreateCoordinatorTabs`.
 

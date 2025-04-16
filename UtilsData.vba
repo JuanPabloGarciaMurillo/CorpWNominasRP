@@ -46,7 +46,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     For Each ws In ThisWorkbook.Worksheets
         ' Skip irrelevant sheets
         Select Case ws.Name
-            Case "Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor"
+            Case "Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", "Cursos", "Dashboard", "Resultados"
                 GoTo NextSheet
         End Select
         
@@ -128,5 +128,4 @@ Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     ' If none of the columns except the first column have data, the row is considered empty
     IsRowEmpty = TRUE
 End Function
-
 
