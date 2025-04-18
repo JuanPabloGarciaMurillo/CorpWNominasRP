@@ -116,6 +116,11 @@ Scripts are modularized across 8 utility modules for clarity and reuse:
 - 🧹 **Minor Utility Improvements**:
   - Updates to `UtilsData`, `UtilsSheet`, and `UtilsTable` for cleaner handling of `Dashboard`/`Resultados`.
 
+### Version 0.7.0
+
+- 🧩 Refactored utility functions into 8 dedicated modules.
+- 🧪 Introduced cross-platform (Windows/Mac) compatibility.
+- 🔄 Improved modular structure and error handling.
 ### Version 0.8.0
 
 - 🧠 Introduced `Resultados` and `Dashboard` sheets.
