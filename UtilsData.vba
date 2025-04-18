@@ -1,15 +1,17 @@
-'==================================================
+'=========================================================
 ' Script: UtilsData
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This module contains utility functions for working with data in Excel worksheets. It includes functions for summing specific values across multiple sheets, checking if a row is empty, and other data manipulation tasks. The module is designed to help streamline data processing and validation in Excel.
 ' Functions included in this module:
 '   - SumPagoNetoFromSheets
 '   - IsRowEmpty
-'==================================================
+'   - GetManagerPagoNeto
+'=========================================================
 
-'==================================================
+'=========================================================
 ' Function: SumPagoNetoFromSheets
 ' Description:
 '   This function calculates the total "PAGO NETO" value from column D across multiple worksheets.
@@ -22,7 +24,8 @@
 ' Notes:
 '   - Only sums values where "PAGO NETO" appears in column A.
 '   - If `sheetNames` is empty, it processes all visible sheets in the workbook.
-'==================================================
+'=========================================================
+
 Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Dim ws          As Worksheet
     Dim totalPagoNeto As Currency
@@ -31,12 +34,14 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Dim dataA       As Variant, dataD As Variant
     Dim i           As Long
     Dim processAllSheets As Boolean
+    Dim skipSheets() As String
     
     On Error GoTo ErrorHandler
     
     ' Initialize variables
     totalPagoNeto = 0
-    processAllSheets = IsEmpty(sheetNames)        ' If sheetNames is empty, process all visible sheets
+    processAllSheets = IsEmpty(sheetNames)
+    skipSheets = Split(SKIP_SHEETS, ",")
     
     ' Turn off screen updating and calculation for performance
     Application.ScreenUpdating = FALSE
@@ -45,15 +50,12 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     ' Loop through the sheets
     For Each ws In ThisWorkbook.Worksheets
         ' Skip irrelevant sheets
-        Select Case ws.Name
-            Case "Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", "Cursos", "Dashboard", "Resultados"
-                GoTo NextSheet
-        End Select
+        If Not IsError(Application.Match(ws.Name, skipSheets, 0)) Then GoTo NextSheet
         
         ' If processing all visible sheets OR the sheet is in the provided list, proceed
         If (processAllSheets And ws.Visible = xlSheetVisible) Or (Not processAllSheets And Not IsError(Application.Match(ws.Name, sheetNames, 0))) Then
             ' Find the last row in column A
-            lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+            lastRow = ws.Cells(ws.Rows.Count, COLUMN_A).End(xlUp).Row
             
             If lastRow > 0 Then
                 ' Read data into arrays for faster processing
@@ -62,7 +64,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
                 
                 ' Loop through the data in column A
                 For i = 1 To UBound(dataA, 1)
-                    If UCase(dataA(i, 1)) = "PAGO NETO" Then
+                    If UCase(dataA(i, 1)) = PAGO_NETO_TEXT Then
                         ' Ensure the corresponding value in column D is numeric
                         If IsNumeric(dataD(i, 1)) Then
                             totalPagoNeto = totalPagoNeto + dataD(i, 1)
@@ -90,7 +92,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Application.Calculation = xlCalculationAutomatic
 End Function
 
-'==================================================
+'=========================================================
 ' Function: IsRowEmpty
 ' Description:
 '   This function checks if a specified row in a worksheet is empty, ignoring the first column.
@@ -103,7 +105,8 @@ End Function
 ' Notes:
 '   - Assumes the worksheet contains at least one table (ListObject) to determine the last column.
 '   - Only considers columns from the second column onward.
-'==================================================
+'=========================================================
+
 ' Function to check if the row is empty (ignores only the first column)
 Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     Dim col         As Long
@@ -118,7 +121,7 @@ Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     lastColumn = ws.ListObjects(1).ListColumns.Count
     
     ' Check all columns except for the first column
-    For col = 2 To lastColumn        ' Skip the first column (column 1)
+    For col = START_COLUMN To lastColumn        ' Skip the first column (column 1)
         If ws.Cells(rowNum, col).Value <> "" Then
             IsRowEmpty = FALSE
             Exit Function
@@ -129,3 +132,45 @@ Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     IsRowEmpty = TRUE
 End Function
 
+'=========================================================
+' Function: GetManagerPagoNeto
+' Description:
+'   This function retrieves the "PAGO NETO" value from the manager sheet.
+'   It searches for the term "PAGO NETO" in column A and returns the corresponding value from column E.
+' Parameters:
+'   - managerSheet (Worksheet): The worksheet containing the "PAGO NETO" data.
+' Returns:
+'   - Currency: The "PAGO NETO" value from column E, or 0 if not found.
+' Notes:
+'   - Assumes the "PAGO NETO" text is in uppercase.
+'   - If the value in column E is not numeric, it returns 0.
+'=========================================================
+Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
+    Dim lastRow As Long
+    Dim rowIndex As Long
+    Dim pagoNetoValue As Currency
+
+    On Error GoTo ErrorHandler
+
+    ' Find the last row in column A
+    lastRow = managerSheet.Range(COLUMN_A & managerSheet.Rows.Count).End(xlUp).Row
+
+    ' Loop through column A to find "PAGO NETO"
+    For rowIndex = 1 To lastRow
+        If UCase(managerSheet.Range(COLUMN_A & rowIndex).Value) = PAGO_NETO_TEXT Then
+            ' Get the value from column E in the same row
+            If IsNumeric(managerSheet.Range(COLUMN_E & rowIndex).Value) Then
+                pagoNetoValue = managerSheet.Range(COLUMN_E & rowIndex).Value
+            End If
+            Exit For
+        End If
+    Next rowIndex
+
+    ' Return the value
+    GetManagerPagoNeto = pagoNetoValue
+    Exit Function
+
+ErrorHandler:
+    MsgBox ERROR_GENERIC & Err.Description, vbCritical, "Error"
+    GetManagerPagoNeto = 0
+End Function

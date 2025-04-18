@@ -1,7 +1,8 @@
-'==================================================
+'=========================================================
 ' Script: UtilsCoordinator
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This module contains utility functions for working with coordinators in Excel VBA.
 '   It includes functions for retrieving aliases based on manager names and deleting tabs.
@@ -10,9 +11,9 @@
 '   - GetCoordinatorAliases
 '   - DeleteManagerCoordinatorTab
 '   - CreateCoordinatorTabs_newTabs
-'==================================================
+'=========================================================
 
-'====================================================
+'=========================================================
 ' Function: GetCoordinatorAliases
 ' Description:
 '   Checks for the aliases of coordinators based on the manager name.
@@ -23,7 +24,7 @@
 ' Notes:
 '   - The function uses a ListObject (table) named "Coordinadores" in the "Colaboradores" sheet.
 '   - It retrieves the GERENCIA and ALIAS columns from the table.
-'====================================================
+'=========================================================
 Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "") As Collection
     Dim aliases As Collection
     Dim wsColaboradores As Worksheet
@@ -44,14 +45,11 @@ Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "")
         If managerAlias = "" Then Exit Function
         managerName = managerAlias ' Use the alias as the manager name
     End If
-    
-    ' Set the Colaboradores sheet and Coordinadores table
-    Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
-    Set coordinadoresTable = wsColaboradores.ListObjects("Coordinadores")
-    
-    ' Get the columns for GERENCIA and ALIAS
-    Set gerenciaColumn = coordinadoresTable.ListColumns("GERENCIA")
-    Set aliasColumn = coordinadoresTable.ListColumns("ALIAS")
+
+    Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
+    Set coordinadoresTable = wsColaboradores.ListObjects(COORDINADORES_TABLE)
+    Set gerenciaColumn = coordinadoresTable.ListColumns(GERENCIA_COLUMN)
+    Set aliasColumn = coordinadoresTable.ListColumns(ALIAS_COLUMN)
     
     ' Loop through the rows in the Coordinadores table
     For Each coordinatorRow In coordinadoresTable.ListRows
@@ -71,7 +69,7 @@ ErrorHandler:
     Set GetCoordinatorAliases = Nothing
 End Function
 
-'==================================================
+'=========================================================
 ' Function: DeleteManagerCoordinatorTab
 ' Description:
 '   Deletes all tabs in the workbook whose names end with " (C)".
@@ -81,7 +79,7 @@ End Function
 '   - None
 ' Notes:
 '   - This function iterates through all sheets in the workbook and deletes those whose names end with " (C)".
-'======================================================================
+'=========================================================
 Public Sub DeleteManagerCoordinatorTab()
     Dim ws          As Worksheet
     Dim tabName     As String
@@ -91,15 +89,15 @@ Public Sub DeleteManagerCoordinatorTab()
         tabName = ws.Name
         
         ' Check if the tab name ends with "(C)" (ignoring trailing spaces)
-        If Right(Trim(tabName), 3) = "(C)" Then
-            Application.DisplayAlerts = FALSE
+        If Right(Trim(tabName), Len(TAB_SUFFIX)) = TAB_SUFFIX Then
+            Application.DisplayAlerts = False
             ws.Delete
-            Application.DisplayAlerts = TRUE
+            Application.DisplayAlerts = True
         End If
     Next ws
 End Sub
 
-'==================================================
+'=========================================================
 ' Function: CreateCoordinatorTabs_newTabs
 ' Description:
 '   This function returns the collection of newly created tabs (newTabs).
@@ -113,10 +111,14 @@ End Sub
 ' Notes:
 '   - The function assumes that the collection `newTabs` has been properly
 '     populated elsewhere in the code.
-'==================================================
+'=========================================================
 
 ' Function to return the newTabs collection from the global scope
 Public Function CreateCoordinatorTabs_newTabs() As Collection
     ' This function returns the newTabs collection
+    If newTabs Is Nothing Then
+        MsgBox "Error: La colección 'newTabs' no está inicializada.", vbCritical, "Error"
+        Exit Function
+    End If
     Set CreateCoordinatorTabs_newTabs = newTabs
 End Function

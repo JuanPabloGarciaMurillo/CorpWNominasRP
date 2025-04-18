@@ -1,7 +1,8 @@
-'=======================================================================
+'=========================================================
 ' Subroutine: SumPagoNetoGerencia
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This subroutine calculates the sum of the "PAGO NETO" values
 '   across all sheets in the workbook and stores the total in cell
@@ -17,24 +18,33 @@
 '   - The "PAGO NETO" values are assumed to be in a consistent location
 '     across all sheets being summed.
 '   - The total sum is stored in cell J4 of the specified target sheet.
-'=======================================================================
+'=========================================================
 
 Public Sub SumPagoNetoGerencia(targetSheet As Worksheet)
     On Error GoTo ErrorHandler
+    Dim managerPagoNeto As Currency
+    Dim total As Currency
 
     ' Validate targetSheet
     If targetSheet Is Nothing Then
-        MsgBox "Target sheet is not valid.", vbExclamation, "Error"
+        MsgBox ERROR_INVALID_SHEET, vbExclamation, "Error"
         Exit Sub
     End If
 
-    ' Perform the calculation and store the result in cell J4
-    Dim total As Currency
+    ' Perform the calculation for all sheets
     total = SumPagoNetoFromSheets(Empty)
-    targetSheet.Range("J4").Value = total
+
+    ' Add the "PAGO NETO" value from the manager sheet
+    managerPagoNeto = GetManagerPagoNeto(targetSheet)
+
+    ' Add the manager's "PAGO NETO" to the total
+    total = total + managerPagoNeto
+
+    ' Store the result in the target cell
+    targetSheet.Range(TARGET_CELL).Value = total
 
     Exit Sub
 
 ErrorHandler:
-    MsgBox "An error occurred: " & Err.Description, vbCritical, "Error"
+    MsgBox ERROR_GENERIC & Err.Description, vbCritical, "Error", "SumPagoNetoGerencia"
 End Sub

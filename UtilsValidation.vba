@@ -1,7 +1,8 @@
-'==================================================
+'=========================================================
 ' Script: UtilsValidation
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '    This module contains utility functions for applying validation rules in Excel VBA. It includes functions for getting a list of aliases based on a coordination value, clearing validation rules, and applying validation dynamically to a table.
 ' Functions included in this module:
@@ -10,9 +11,9 @@
 '   - ApplyValidation
 '   - ApplyDynamicValidation
 '   - ProcessRow
-'==================================================
+'=========================================================
 
-'==================================================
+'=========================================================
 ' Function: GetAliasList
 ' Description:
 '   This function retrieves a list of aliases based on the provided coordination value.
@@ -23,14 +24,15 @@
 ' Notes:
 '   - The function uses the TEXTJOIN function to concatenate the aliases.
 '   - It assumes the aliases are stored in a table named "Promotores" with columns "COORDINACION" and "ALIAS".
-'==================================================
+'=========================================================
 
 Public Function GetAliasList(ByVal coordValue As String) As String
+    
     Dim validationFormula As String
     Dim result As Variant
 
     ' Build the formula to retrieve the alias list dynamically
-    validationFormula = "=TEXTJOIN("","", TRUE, IF(Promotores[COORDINACION] = """ & coordValue & """, Promotores[ALIAS], """"))"
+    validationFormula = "=TEXTJOIN("","", TRUE, IF(" & PROMOTORES_TABLE & "[" & COORDINACION_COLUMN & "] = """ & coordValue & """, " & PROMOTORES_TABLE & "[" & ALIAS_COLUMN & "], """"))"
 
     ' Evaluate the formula
     On Error Resume Next
@@ -45,7 +47,7 @@ Public Function GetAliasList(ByVal coordValue As String) As String
     End If
 End Function
 
-'==================================================
+'=========================================================
 ' Sub: ClearValidation
 ' Description:
 '   This function clears any validation rules applied to a specified range.
@@ -56,7 +58,7 @@ End Function
 ' Notes:
 '   - The function uses On Error Resume Next to suppress errors if the range has no validation.
 '   - It deletes the validation rules from the specified range.
-'==================================================
+'=========================================================
 
 Public Sub ClearValidation(ByVal validationRange As Range)
     If validationRange Is Nothing Then
@@ -68,7 +70,7 @@ Public Sub ClearValidation(ByVal validationRange As Range)
     On Error GoTo 0
 End Sub
 
-'==================================================
+'=========================================================
 ' Sub: ApplyValidation
 ' Description:
 '   This function applies a validation rule to a specified range based on a list of aliases.
@@ -80,7 +82,7 @@ End Sub
 ' Notes:
 '   - The function splits the alias list into an array and trims spaces.
 '   - It applies a list validation rule to the specified range using the Join function.
-'==================================================
+'=========================================================
 
 Public Sub ApplyValidation(ByVal validationRange As Range, ByVal aliasList As String)
     If validationRange Is Nothing Then
@@ -108,7 +110,7 @@ Public Sub ApplyValidation(ByVal validationRange As Range, ByVal aliasList As St
     On Error GoTo 0
 End Sub
 
-'=======================================================================
+'=========================================================
 ' Sub: ApplyDynamicValidation
 ' Description:
 '   This subroutine applies dynamic validation to a table based on a value column and a validated column.
@@ -121,7 +123,7 @@ End Sub
 '   - None
 ' Notes:
 '   - The subroutine loops through each row in the table and applies validation dynamically.
-'=======================================================================
+'=========================================================
 
 Public Sub ApplyDynamicValidation(ByVal ws As Worksheet, ByVal tableName As String, ByVal valueColumnName As String, ByVal validatedColumnName As String)
     Dim tbl As ListObject
@@ -172,7 +174,7 @@ Public Sub ApplyDynamicValidation(ByVal ws As Worksheet, ByVal tableName As Stri
     Next row
 End Sub
 
-'=======================================================================
+'=========================================================
 ' Sub: ProcessRow
 ' Description:
 '   This subroutine processes a row in the table and applies validation based on the COORDINADOR value.
@@ -187,7 +189,7 @@ End Sub
 '   - If the current validation matches the alias list, it skips applying validation.
 '   - It uses On Error Resume Next to suppress errors when checking the current validation.
 '   - It assumes the alias list is a comma-separated string.
-'=======================================================================
+'=========================================================
 Public Sub ProcessRow(coordCell As Range, promotorCell As Range)
     Dim aliasList As String
     Dim currentValidation As String

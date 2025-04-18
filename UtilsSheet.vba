@@ -1,7 +1,8 @@
-'==================================================
+'=========================================================
 ' Script: UtilsSheet
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This module contains utility functions for working with sheets in Excel VBA. It includes functions for checking if a sheet exists, deleting unprotected tabs, and sanitizing sheet names. The module is designed to help manage the organization and naming of sheets in the workbook.
 ' and procedures in the workbook.
@@ -10,9 +11,9 @@
 '   - DeleteUnprotectedTabs
 '   - SanitizeSheetName
 '   - IsInNewTabs
-'==================================================
+'=========================================================
 
-'====================================================
+'=========================================================
 ' Function: SheetExists
 ' Description:
 '   Checks whether a worksheet with the specified name exists in the current workbook.
@@ -23,7 +24,7 @@
 ' Notes:
 '   - The check is case-insensitive.
 '   - Suppresses runtime errors using On Error Resume Next.
-'====================================================
+'=========================================================
 Public Function SheetExists(sheetName As Variant) As Boolean
     Dim sheetNameStr As String
     
@@ -34,7 +35,7 @@ Public Function SheetExists(sheetName As Variant) As Boolean
     On Error GoTo 0
 End Function
 
-'====================================================
+'=========================================================
 ' Function: DeleteUnprotectedTabs
 ' Description:
 '   Deletes all unprotected tabs in the workbook, except for the active tab and any tabs specified in the protectedTabs array.
@@ -45,7 +46,7 @@ End Function
 ' Notes:
 '   - The function uses a loop to iterate through all sheets in the workbook.
 '   - It checks if the tab name is in the protectedTabs array or if it is the active tab before deleting.
-'====================================================
+'=========================================================
 Public Sub DeleteUnprotectedTabs(protectedTabs As Variant)
     Dim ws          As Worksheet
     Dim tabName     As String
@@ -71,7 +72,7 @@ Public Sub DeleteUnprotectedTabs(protectedTabs As Variant)
     Next ws
 End Sub
 
- '==================================================
+ '=========================================================
 ' Function: SanitizeSheetName
 ' Description:
 '   This function sanitizes a given string to make it a valid Excel sheet name.
@@ -81,7 +82,7 @@ End Sub
 '   - sheetName (Variant): The name to sanitize.
 ' Returns:
 '   - String: The sanitized sheet name.
-'==================================================
+'=========================================================
 Public Function SanitizeSheetName(sheetName As Variant) As String
     On Error Resume Next
 
@@ -112,7 +113,7 @@ Public Function SanitizeSheetName(sheetName As Variant) As String
     SanitizeSheetName = sheetName
 End Function
 
-'==================================================
+'=========================================================
 ' Function: IsInNewTabs
 ' Description:
 '   This function checks if a given sheet name exists in a collection of newly created tabs.
@@ -122,7 +123,7 @@ End Function
 '   - newTabs (Collection): A collection containing the names of newly created sheets.
 ' Returns:
 '   - Boolean: True if the sheet is in the collection, otherwise False.
-'==================================================
+'=========================================================
 Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boolean
     Dim i           As Integer
     On Error Resume Next
