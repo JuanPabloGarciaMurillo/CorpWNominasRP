@@ -1,7 +1,8 @@
-'=======================================================================
+'=========================================================
 ' Subroutine: CreateCoordinatorTabs
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This subroutine automates the process of creating coordinator-specific tabs in the workbook. It first gathers the necessary data from the "Coordinadores" table in the "Colaboradores" sheet. For each valid coordinator, it creates a new tab by copying a template sheet and renaming it according to the coordinator's name. The subroutine then populates the new tabs with relevant data from the "Coordinadores" table, including the coordinator's alias, and applies filters to include only the relevant data for each coordinator. It also copies common value (e.g., "razonSocial", "periodoDelPagoDel") to the new tabs.
 ' Parameters:
@@ -14,7 +15,7 @@
 '   - It applies a filter to the data based on the coordinator name and copies the filtered data to the newly created tab.
 '   - The process includes sorting the coordinator names and copying shared values to the new sheets (e.g., "razonSocial", "periodoDelPagoDel").
 '   - The subroutine also handles errors when no coordinators are found or if no matches are found for a coordinator's alias.
-'=======================================================================
+'=========================================================
 
 ' Declare newTabs at the module level
 Public newTabs      As Collection
@@ -43,33 +44,35 @@ Sub CreateCoordinatorTabs()
     Dim foundRow    As Range
     Dim iRow        As ListRow
     Dim coordAlias  As Variant
-    Dim headers     As Variant
+    Dim headersArray     As Variant
     Dim columnIndex As Variant
     Dim idx         As Integer
-    
+    Dim coordColumnIndex As Long
+    Dim aliasColumnIndex As Long
+    Dim gerenciaColumnIndex As Long
     Set coordKeys = New Collection
     Set headerMapping = New clsDictionary
+    Dim key             As Variant
+
     
     ' Set the source sheet as the active sheet where the button is clicked
     Set wsSource = ActiveSheet
-    Set templateSheet = ThisWorkbook.Sheets("Ejemplo Coordinacion")
+    Set templateSheet = ThisWorkbook.Sheets(COORDINADORES_SHEET)
     
     ' Create a dictionary to store the visibility status of sheets
     Set sheetState = New Collection
     Set newTabs = New Collection
     
-    ' Add header mappings with sanitized keys
-    
     ' Define headers and their corresponding column indices
-    headers = Array("PROMOTOR", "CREDENCIAL", "NOMBRE DEL ALUMNO", "PLANTEL", "CURSO", "GRUPO", "FECHA", "TS PLANTEL", "TS CREDENCIAL")
-    columnIndex = Array(1, 2, 3, 5, 6, 7, 9, 10, 11)
+    headersArray = Split(HEADERS, ",")
+    columnIndex = Split(COLUMN_INDICES, ",")
     
     ' Loop through the headers and add them to the dictionary
-    For idx = LBound(headers) To UBound(headers)
-        If Not headerMapping.Exists(CStr(headers(idx))) Then
-            headerMapping.Add CStr(headers(idx)), columnIndex(idx)
+    For idx = LBound(headersArray) To UBound(headersArray)
+        If Not headerMapping.Exists(CStr(headersArray(idx))) Then
+            headerMapping.Add CStr(headersArray(idx)), columnIndex(idx)
         End If
-    Next idx
+    Next idx  
     
     ' Unhide all sheets and store their original state (hidden or visible)
     For Each ws In ThisWorkbook.Sheets
@@ -90,16 +93,20 @@ Sub CreateCoordinatorTabs()
     ' Get the last row of the table data (excluding Totals Row)
     lastDataRow = tableObj.ListRows.Count + tableStartRow - 1
     
-    Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
-    Set gerentesTbl = wsColaboradores.ListObjects("Gerentes")
-    Set coordTbl = wsColaboradores.ListObjects("Coordinadores")
+    Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
+    Set gerentesTbl = wsColaboradores.ListObjects(GERENTES_TABLE)
+    Set coordTbl = wsColaboradores.ListObjects(COORDINADORES_TABLE)
+
+    ' Dynamically retrieve column indices for "ALIAS" and "GERENCIA"
+    aliasColumnIndex = coordTbl.ListColumns(ALIAS_COLUMN).Index
+    gerenciaColumnIndex = coordTbl.ListColumns(GERENCIA_COLUMN).Index   
     
     ' Get manager's name from B1:D1
     gerenteNombre = Trim(wsSource.Range("B1").Value)
     
     ' Find the alias for the manager
     On Error Resume Next
-    Set foundRow = gerentesTbl.ListColumns("NOMBRE").DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
+    Set foundRow = gerentesTbl.ListColumns(NOMBRE_COLUMN).DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
     On Error GoTo 0
     
     If Not foundRow Is Nothing Then
@@ -115,8 +122,8 @@ Sub CreateCoordinatorTabs()
     
     ' Add coordinators from the "Coordinadores" table where GERENCIA = gerenteAlias
     For Each iRow In coordTbl.ListRows
-        If Trim(iRow.Range(1, 3).Value) = gerenteAlias Then        ' Column 3 = GERENCIA
-        coordAlias = Trim(CStr(iRow.Range(1, 2).Value))        ' Column 2 = ALIAS
+        If Trim(iRow.Range(1, gerenciaColumnIndex).Value) = gerenteAlias Then
+            coordAlias = Trim(CStr(iRow.Range(1, aliasColumnIndex).Value))
         If CStr(coordAlias) <> "" And Not uniqueKeys.Exists(CStr(coordAlias)) Then
             uniqueKeys.Add CStr(coordAlias), CStr(coordAlias)
         End If
@@ -124,14 +131,13 @@ Sub CreateCoordinatorTabs()
 Next iRow
 
 ' Add unique coordinators from uniqueKeys to coordKeys
-Dim key             As Variant
 For Each key In uniqueKeys.GetKeys
     coordKeys.Add key
 Next key
 
 ' Prevent errors if no coordinators are found
 If coordKeys.Count = 0 Then
-    MsgBox "No se encontraron coordinadores validos.", vbExclamation, "Error"
+    MsgBox ERROR_NO_VALID_COORDINATOR, vbExclamation, "Error"
     Exit Sub
 End If
 
@@ -143,9 +149,11 @@ End If
 Application.ScreenUpdating = FALSE
 Application.Calculation = xlCalculationManual
 
+coordColumnIndex = tableObj.ListColumns(COORDINADOR_COLUMN).Index
+
 ' Sort the "Coordinador" column in ascending order (A-Z)
 tableObj.Sort.SortFields.Clear
-tableObj.Sort.SortFields.Add key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
+tableObj.Sort.SortFields.Add key:=tableObj.ListColumns(coordColumnIndex).Range, _
                              SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
 tableObj.Sort.Apply
 
@@ -183,8 +191,8 @@ For Each coordName In coordKeys
         Dim nameRange As Range
         
         ' Set the range for ALIAS and NOMBRE columns (the table's actual range)
-        Set aliasRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("ALIAS").DataBodyRange
-        Set nameRange = wsColaboradores.ListObjects("Coordinadores").ListColumns("NOMBRE").DataBodyRange
+        Set aliasRange = wsColaboradores.ListObjects(COORDINADORES_TABLE).ListColumns(ALIAS_COLUMN).DataBodyRange
+        Set nameRange = wsColaboradores.ListObjects(COORDINADORES_TABLE).ListColumns(NOMBRE_COLUMN).DataBodyRange
         
         ' Perform lookup using Application.Match instead of WorksheetFunction.Lookup
         On Error Resume Next
@@ -233,7 +241,7 @@ Dim visibleCells    As Range, newRow As ListRow
 For Each coordName In coordKeys
     
     ' Apply filter for the current coordinator
-    tableObj.Range.AutoFilter Field:=1, Criteria1:=coordName
+    tableObj.Range.AutoFilter Field:=coordColumnIndex, Criteria1:=coordName
     
     ' Attempt to get visible cells
     On Error Resume Next
@@ -245,7 +253,7 @@ For Each coordName In coordKeys
     isValid = TRUE
     
     If Not visibleCells Is Nothing Then
-        For Each cell In visibleCells.Columns(1).Cells
+        For Each cell In visibleCells.Columns(coordColumnIndex).Cells
             If Trim(UCase(cell.Value)) <> coordName Then
                 isValid = FALSE
                 Exit For
@@ -303,11 +311,28 @@ For Each coordName In coordKeys
             If Not IsRowEmpty(wsSource, cell.Row) Then
                 ' Add a new row to the new table
                 Set newRow = newTable.ListRows.Add
+                If newRow Is Nothing Then
+                    MsgBox "Failed to add a new row to the target table.", vbCritical
+                    Exit Sub
+                End If
                 For i = 1 To tableObj.ListColumns.Count
                     header = tableObj.ListColumns(i).Name
-                    If headerMapping.Exists(header) Then
-                        newRow.Range(1, headerMapping.GetValue(header)).Value = wsSource.Cells(cell.Row, i).Value
+                    
+                    ' Skip headers that are not in the headerMapping dictionary
+                    If Not headerMapping.Exists(header) Then
+                        GoTo NextHeader
                     End If
+                    
+                    ' Process valid headers
+                    Dim targetColumnIndex As Long
+                    targetColumnIndex = headerMapping.GetValue(header)
+                    If targetColumnIndex > 0 And targetColumnIndex <= newTable.ListColumns.Count Then
+                        newRow.Range(1, targetColumnIndex).Value = wsSource.Cells(cell.Row, i).Value
+                    Else
+                        MsgBox "Invalid column index for header: " & header & ", Index: " & targetColumnIndex, vbCritical
+                    End If
+                    
+                NextHeader:
                 Next i
             End If
         End If
@@ -315,6 +340,7 @@ For Each coordName In coordKeys
     
     ' Auto-fit columns after inserting data
     newTab.Cells.EntireColumn.AutoFit
+    
     SkipCoordinator:
     ' Continue to the next coordinator
 Next coordName
@@ -328,7 +354,7 @@ If wsSource.AutoFilterMode Then
 End If
 
 ' Restore the original filter state in the active sheet
-tableObj.Range.AutoFilter Field:=1
+tableObj.Range.AutoFilter Field:=coordColumnIndex
 
 ' Restore screen updating and automatic calculation
 Application.ScreenUpdating = TRUE
@@ -345,7 +371,7 @@ Exit Sub
 
 ErrHandler:
     If Err.Number <> 0 Then
-        MsgBox "Error. Porfavor contacta a tu administrador " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorTabs"
+        MsgBox ERROR_GENERIC & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorTabs"
     End If
 
     ' Restore the original visibility state of the sheets

@@ -1,7 +1,8 @@
-'==================================================
+'=========================================================
 ' Script: UtilsManager
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This module contains utility functions for working with managers in Excel VBA.
 '   It includes functions for renaming sheets based on manager names and retrieving aliases.
@@ -9,9 +10,9 @@
 ' Functions included in this module:
 '   - GetManagerAliasFromNombreGerente
 '   - RenameGerenteTabToAlias
-'==================================================
+'=========================================================
 
-'==================================================
+'=========================================================
 ' Function: GetManagerAliasFromNombreGerente
 ' Description:
 '    This function retrieves the manager's name from cell B1 and checks for their aliases.
@@ -23,7 +24,9 @@
 ' Notes:
 '   -  The function checks if cell B1 is empty and shows a message if so.
 '   -  It retrieves the manager's name from cell B1 and uses it to call the GetCoordinatorAliases function.
-'======================================================================
+'=========================================================
+
+
 Public Function GetManagerAliasFromNombreGerente() As String
     Dim wsColaboradores As Worksheet
     Dim gerentesTbl As ListObject
@@ -43,13 +46,11 @@ Public Function GetManagerAliasFromNombreGerente() As String
     End If
 
     ' Set the Colaboradores sheet and Gerentes table
-    Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
-    Set gerentesTbl = wsColaboradores.ListObjects("Gerentes")
+    Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
+    Set gerentesTbl = wsColaboradores.ListObjects(GERENTES_TABLE)
 
     ' Find the alias for the manager in the Gerentes table
-    On Error Resume Next
-    Set foundRow = gerentesTbl.ListColumns("NOMBRE").DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
-    On Error GoTo 0
+    Set foundRow = gerentesTbl.ListColumns(NOMBRE_COLUMN).DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
 
     If Not foundRow Is Nothing Then
         gerenteAlias = foundRow.Offset(0, 1).Value ' Assuming the alias is in the next column
@@ -66,7 +67,7 @@ ErrorHandler:
     GetManagerAliasFromNombreGerente = ""
 End Function
 
-'====================================================
+'=========================================================
 ' Function: RenameGerenteTabToAlias
 ' Description:
 '   Renames the active Gerente sheet based on the value in cell B1
@@ -78,7 +79,7 @@ End Function
 '   - Checks if B1 is empty and shows a message if so.
 '   - Searches for the Gerente name in the "Gerentes" table.
 '   - Prevents renaming if the alias already exists as a sheet.
-'====================================================
+'=========================================================
 
 Public Function RenameGerenteTabToAlias() As String
     On Error GoTo ErrHandler

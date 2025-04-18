@@ -1,7 +1,8 @@
-'=======================================================================
+'=========================================================
 ' Subroutine: CreatePromotorTabs
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This subroutine automates the process of creating individual tabs for each promotor in the workbook. It collects unique promotor names from the "Promotores" table in the "Colaboradores" sheet and checks if each promotor has a corresponding entry in the "Sueldos_Base" table in the "Tabuladores" sheet. If the promotor exists in the "Sueldos_Base" table, the subroutine creates a new sheet for that promotor by copying a template sheet and renaming it according to the promotor's name. The subroutine then populates the new tabs with relevant data from the "Promotores" table and applies filters to include only the relevant data for each promotor. Common values from the source sheet (e.g., "razonSocial", "periodoDelPagoDel") are also copied into all the new tabs.
 ' Parameters:
@@ -17,7 +18,7 @@
 '   - Filters are applied to each promotor's data, and new tabs are populated with filtered rows.
 '   - After creating the tabs, common values from the source sheet are pasted into corresponding cells in each new tab.
 '   - The original visibility state of the sheets is preserved, with only the newly created tabs visible.
-'=======================================================================
+'=========================================================
 
 Public Sub CreatePromotorTabs()
     On Error GoTo ErrHandler
@@ -48,7 +49,8 @@ Public Sub CreatePromotorTabs()
     Dim promotorMatch As Boolean
     Dim coordinatorName As String
     Dim idx         As Integer
-    Dim headers     As Variant
+    Dim promotorColumnIndex As Long
+    Dim headersArray     As Variant
     Dim columnIndex As Variant
     Dim razonSocial As Variant
     Dim periodoDelPagoDel As Variant
@@ -61,26 +63,26 @@ Public Sub CreatePromotorTabs()
     
     ' Set the source sheet as the active sheet where the button is clicked
     Set wsSource = ActiveSheet
-    Set templateSheet = ThisWorkbook.Sheets("Ejemplo Promotor")
+    Set templateSheet = ThisWorkbook.Sheets(PROMOTORES_SHEET)
     
-    Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
-    Set wsTabuladores = ThisWorkbook.Sheets("Tabuladores")
+    Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
+    Set wsTabuladores = ThisWorkbook.Sheets(TABULADORES_SHEET)
     
     ' Create a dictionary to store the visibility status of sheets
     Set sheetState = New Collection
     Set newTabs = New Collection
     
     ' Set the tables
-    Set promotorTable = wsColaboradores.ListObjects("Promotores")
-    Set baseSalaryTable = wsTabuladores.ListObjects("Sueldos_Base")
+    Set promotorTable = wsColaboradores.ListObjects(PROMOTORES_TABLE)
+    Set baseSalaryTable = wsTabuladores.ListObjects(SUELDOS_BASE_TABLE)
     
     ' Define headers and their corresponding column indices
-    headers = Array("PROMOTOR", "CREDENCIAL", "NOMBRE DEL ALUMNO", "PLANTEL", "CURSO", "GRUPO", "FECHA", "TS PLANTEL", "TS CREDENCIAL")
-    columnIndex = Array(1, 2, 3, 5, 6, 7, 9, 10, 11)
+    headersArray = Split(HEADERS, ",")
+    columnIndex = Split(COLUMN_INDICES, ",")
     ' Loop through the headers and add them to the dictionary
-    For idx = LBound(headers) To UBound(headers)
-        If Not headerMapping.Exists(CStr(headers(idx))) Then
-            headerMapping.Add CStr(headers(idx)), columnIndex(idx)
+    For idx = LBound(headersArray) To UBound(headersArray)
+        If Not headerMapping.Exists(CStr(headersArray(idx))) Then
+            headerMapping.Add CStr(headersArray(idx)), columnIndex(idx)
         End If
     Next idx
     
@@ -106,9 +108,9 @@ Public Sub CreatePromotorTabs()
     coordinatorName = wsSource.Name
     For Each promotorRow In promotorTable.ListRows
         
-        baseSalaryPromotorName = promotorRow.Range.Cells(1, promotorTable.ListColumns("NOMBRE").Index).Value
-        baseSalaryPromotorAlias = promotorRow.Range.Cells(1, promotorTable.ListColumns("ALIAS").Index).Value
-        promotorCoord = promotorRow.Range.Cells(1, promotorTable.ListColumns("COORDINACION").Index).Value
+        baseSalaryPromotorName = promotorRow.Range.Cells(1, promotorTable.ListColumns(NOMBRE_COLUMN).Index).Value
+        baseSalaryPromotorAlias = promotorRow.Range.Cells(1, promotorTable.ListColumns(ALIAS_COLUMN).Index).Value
+        promotorCoord = promotorRow.Range.Cells(1, promotorTable.ListColumns(COORDINACION_COLUMN).Index).Value
         
         If Trim(UCase(promotorCoord)) = Trim(UCase(coordinatorName)) Then
             
@@ -118,7 +120,9 @@ Public Sub CreatePromotorTabs()
                 ' Check if Promotor matches Tabulador COLABORADOR
                 If tabuladorRow.Range.Cells(1, baseSalaryTable.ListColumns("COLABORADOR").Index).Value = baseSalaryPromotorName Then
                     promotorMatch = TRUE
-                    promotorDict.Add baseSalaryPromotorAlias, Nothing
+                    If Not promotorDict.Exists(baseSalaryPromotorAlias) Then
+                        promotorDict.Add baseSalaryPromotorAlias, Nothing
+                    End If
                     Exit For
                 End If
             Next tabuladorRow
@@ -130,7 +134,7 @@ Public Sub CreatePromotorTabs()
         promotorName = Trim(cell.Value)
         
         ' Check if the cell has a valid promotor name and it's not already in the dictionary
-        If promotorName <> "" And promotorName <> "PROMOTOR" And Not promotorDict.Exists(promotorName) Then
+        If promotorName <> "" And promotorName <> PROMOTOR_COLUMN And Not promotorDict.Exists(promotorName) Then
             promotorDict.Add promotorName, Nothing
         End If
     Next cell
@@ -155,23 +159,25 @@ Public Sub CreatePromotorTabs()
     Application.ScreenUpdating = FALSE
     Application.Calculation = xlCalculationManual
     
+    promotorColumnIndex = tableObj.ListColumns(PROMOTOR_COLUMN).Index
+    
     ' Sort the "Promotor" column in ascending order (A-Z)
     tableObj.Sort.SortFields.Clear
-    tableObj.Sort.SortFields.Add Key:=wsSource.Range("A" & tableStartRow & ":A" & lastDataRow), _
+    tableObj.Sort.SortFields.Add Key:=tableObj.ListColumns(promotorColumnIndex).Range, _
                                  SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
     tableObj.Sort.Apply
-    ' Iterate over unique promotors and create or recreate tabs    
+    ' Iterate over unique promotors and create or recreate tabs
     For Each promotorName In promotorDict.GetKeys
         ' Sanitize promotor name using the helper function
         promotorName = SanitizeSheetName(promotorName)
-
+        
         ' Check if the tab already exists
         If SheetExists(promotorName) Then
-            MsgBox "El promotor '" & promotorName & "' tiene un registro asignado a otra coordinacion. " & _
+            MsgBox "El promotor        '" & promotorName & "' tiene un registro asignado a otra coordinacion. " & _
                    "Porfavor revisa la data y vuelve a intentar.", vbCritical, "Promotor duplicado"
             GoTo ErrHandler
         End If
-
+        
         ' Recreate the tab from the template
         templateSheet.Copy After:=wsSource
         Set newTab = ThisWorkbook.Sheets(wsSource.Index + 1)
@@ -193,8 +199,8 @@ Public Sub CreatePromotorTabs()
         ' Assuming "Colaboradores" is the sheet containing the promotors table
         Set wsColaboradores = ThisWorkbook.Sheets("Colaboradores")
         ' Set the range for ALIAS and NOMBRE columns (the table's actual range)
-        Set aliasRange = wsColaboradores.ListObjects("Promotores").ListColumns("ALIAS").DataBodyRange
-        Set nameRange = wsColaboradores.ListObjects("Promotores").ListColumns("NOMBRE").DataBodyRange
+        Set aliasRange = wsColaboradores.ListObjects(PROMOTORES_TABLE).ListColumns(ALIAS_COLUMN).DataBodyRange
+        Set nameRange = wsColaboradores.ListObjects(PROMOTORES_TABLE).ListColumns(NOMBRE_COLUMN).DataBodyRange
         ' Perform lookup using Application.Match instead of WorksheetFunction.Lookup
         On Error Resume Next
         matchRow = Application.Match(promotorName, aliasRange, 0)
@@ -237,13 +243,14 @@ Public Sub CreatePromotorTabs()
     
     ' Loop through the filtered rows (only visible rows for each promotor) and copy the filtered data
     Dim visibleCells As Range, newRow As ListRow
+    
     For Each promotorName In promotorDict.GetKeys
         
         ' Always clear visibleCells before applying the filter
         Set visibleCells = Nothing
         
         ' Apply filter for the current Promotor
-        tableObj.Range.AutoFilter Field:=1, Criteria1:=promotorName
+        tableObj.Range.AutoFilter Field:=promotorColumnIndex, Criteria1:=promotorName
         
         ' Get the corresponding worksheet for the promotor
         On Error Resume Next
@@ -265,12 +272,30 @@ Public Sub CreatePromotorTabs()
                 ' Loop through filtered rows
                 For Each cell In visibleCells.Columns(1).Cells
                     If cell.row >= tableStartRow And Not IsRowEmpty(wsSource, cell.row) Then
+                        ' Add a new row to the new table
                         Set newRow = newTable.ListRows.Add
+                        If newRow Is Nothing Then
+                            MsgBox "Failed To add a New row To the target table.", vbCritical
+                            Exit Sub
+                        End If
                         For i = 1 To tableObj.ListColumns.Count
                             header = tableObj.ListColumns(i).Name
-                            If headerMapping.Exists(header) Then
-                                newRow.Range(1, headerMapping.GetValue(header)).Value = wsSource.Cells(cell.row, i).Value
+                            
+                            ' Skip headers that are not in the headerMapping dictionary
+                            If Not headerMapping.Exists(header) Then
+                                GoTo NextHeader
                             End If
+                            
+                            ' Process valid headers
+                            Dim targetColumnIndex As Long
+                            targetColumnIndex = headerMapping.GetValue(header)
+                            If targetColumnIndex > 0 And targetColumnIndex <= newTable.ListColumns.Count Then
+                                newRow.Range(1, targetColumnIndex).Value = wsSource.Cells(cell.Row, i).Value
+                            Else
+                                MsgBox "Invalid column index For header: " & header & ", Index: " & targetColumnIndex, vbCritical
+                            End If
+                            
+                            NextHeader:
                         Next i
                     End If
                 Next cell
@@ -278,12 +303,13 @@ Public Sub CreatePromotorTabs()
                 ' Auto-fit columns after inserting data
                 newTab.Cells.EntireColumn.AutoFit
             End If
+            
+            ' Reset the filter after processing the current promotor
+            If tableObj.AutoFilter.FilterMode Then
+                tableObj.AutoFilter.ShowAllData
+            End If
         End If
         
-        ' Reset the filter after processing the current promotor
-        If tableObj.AutoFilter.FilterMode Then
-            tableObj.AutoFilter.ShowAllData
-        End If
     Next promotorName
     
     ' Reset the filter
@@ -292,7 +318,11 @@ Public Sub CreatePromotorTabs()
     End If
     
     ' Restore the original filter state in the active sheet
-    tableObj.Range.AutoFilter Field:=1
+    tableObj.Range.AutoFilter Field:=promotorColumnIndex
+    
+    ' Restore screen updating and automatic calculation
+    Application.ScreenUpdating = TRUE
+    Application.Calculation = xlCalculationAutomatic
     
     ' Hide the sheets back to their original state, excluding new tabs
     For Each ws In ThisWorkbook.Sheets
@@ -300,12 +330,14 @@ Public Sub CreatePromotorTabs()
             ws.Visible = sheetState(ws.Name)
         End If
     Next ws
-
+    
+    Exit Sub
+    
     ErrHandler:
     If Err.Number <> 0 Then
-        MsgBox "Error. Porfavor contacta a tu administrador " & Err.Number & ": " & Err.Description, vbCritical, "CreatePromotorTabs"
+        MsgBox ERROR_GENERIC & Err.Number & ": " & Err.Description, vbCritical, "CreatePromotorTabs"
     End If
-
+    
     ' Restore the original visibility state of the sheets
     On Error Resume Next
     For Each ws In ThisWorkbook.Sheets
@@ -314,11 +346,11 @@ Public Sub CreatePromotorTabs()
         End If
     Next ws
     On Error GoTo 0
-
+    
     ' Restore application settings
-    Application.CutCopyMode = False
-    Application.ScreenUpdating = True
+    Application.CutCopyMode = FALSE
+    Application.ScreenUpdating = TRUE
     Application.Calculation = xlCalculationAutomatic
     Exit Sub
-
+    
 End Sub

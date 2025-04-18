@@ -1,7 +1,8 @@
-'=======================================================================
+'=========================================================
 ' Subroutine: CreateCoordinatorAndPromotorTabs
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This subroutine automates the process of creating new coordinator and
 '   promotor tabs within the workbook.
@@ -21,7 +22,7 @@
 '     function in the `Utils` module.
 '   - The code uses error handling to capture and display any runtime errors
 '     encountered during execution.
-'=======================================================================
+'=========================================================
 
 Sub CreateCoordinatorAndPromotorTabs()
     On Error GoTo ErrHandler
@@ -32,7 +33,9 @@ Sub CreateCoordinatorAndPromotorTabs()
     
     ' Define the list of protected tabs
     Dim protectedTabs As Variant
-    protectedTabs = Array("Premios", "Planteles", "Tabuladores", "Colaboradores", "Ejemplo Coordinacion", "Ejemplo Promotor", "Cursos", "Dashboard", "Resultados", activatingSheet.Name)
+    protectedTabs = Split(SKIP_SHEETS, ",")
+    ReDim Preserve protectedTabs(UBound(protectedTabs) + 1)
+    protectedTabs(UBound(protectedTabs)) = activatingSheet.Name
     
     ' Delete all unprotected tabs
     Call DeleteUnprotectedTabs(protectedTabs)
@@ -68,6 +71,6 @@ Sub CreateCoordinatorAndPromotorTabs()
 ErrHandler:
     If Err.Number <> 0 Then
         Debug.Print "Error in CreateCoordinatorAndPromotorTabs: " & Err.Description
-        MsgBox "Error. Porfavor Contacta a tu administrador " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorAndPromotorTabs"
+        MsgBox ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorAndPromotorTabs"
     End If
 End Sub

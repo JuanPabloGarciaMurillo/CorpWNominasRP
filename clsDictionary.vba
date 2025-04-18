@@ -1,3 +1,35 @@
+'=========================================================
+' Class Module: clsDictionary
+' Version: 0.9.0
+' Author: Juan Pablo Garcia Murillo
+' Date: 04/18/2025
+' Description:
+'   A custom dictionary-like class that stores key-value pairs using internal collections. Supports basic dictionary operations such as:
+'     - Add, Remove, Replace, Exists
+'     - Retrieve keys or values
+'     - Count and Clear
+'     - Error handling for duplicate or missing keys
+' Properties:
+'   - dictKeys (Collection): Internal collection for storing string keys.
+'   - dictValues (Collection): Internal collection for storing values.
+' Public Methods:
+'   - Add(key, value): Adds a new key-value pair. Raises error if key exists.
+'   - Exists(key): Returns True if the key exists.
+'   - GetValue(key): Returns the value for a given key. Raises error if not found.
+'   - Remove(key): Removes a key-value pair. Raises error if not found.
+'   - Replace(key, value): Replaces value for existing key. Raises error if not found.
+'   - GetKeys(): Returns an array of all keys.
+'   - GetValues(): Returns an array of all values.
+'   - Clear(): Clears all key-value pairs.
+'   - Count(): Returns the number of items in the dictionary.
+' Private Methods:
+'   - FindKeyIndex(key): Returns the index of a key in dictKeys, or 0 if not found.
+' Notes:
+'   - Keys are treated as strings and stored in insertion order.
+'   - Duplicate keys are not allowed.
+'   - This class mimics basic Dictionary behavior in environments where the Scripting.Dictionary object is unavailable or undesired.
+'=========================================================
+
 Private dictKeys As Collection
 Private dictValues As Collection
 
@@ -10,7 +42,7 @@ End Sub
 ' Add a key-value pair to the dictionary
 Public Sub Add(key As Variant, value As Variant)
     If Exists(CStr(key)) Then
-        Err.Raise vbObjectError + 1, "clsDictionary", "Key already exists: " & CStr(key)
+        Err.Raise vbObjectError + 1, "clsDictionary", ERROR_KEY_EXISTS & CStr(key)
     End If
     dictKeys.Add CStr(key)
     dictValues.Add value
@@ -22,13 +54,14 @@ Public Function Exists(key As Variant) As Boolean
 End Function
 
 ' Get the value associated with a key
-Public Function GetValue(key As String) As Variant
+Public Function GetValue(key As Variant) As Variant
     Dim index As Long
-    index = FindKeyIndex(key)
+    ' Convert the key to a string for internal processing
+    index = FindKeyIndex(CStr(key))
     If index > 0 Then
         GetValue = dictValues(index)
     Else
-        Err.Raise vbObjectError + 2, "clsDictionary", "Key not found: " & key
+        Err.Raise vbObjectError + 4, "clsDictionary", ERROR_KEY_NOT_FOUND & CStr(key)
     End If
 End Function
 

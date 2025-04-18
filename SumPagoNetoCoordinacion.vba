@@ -1,7 +1,8 @@
-'=======================================================================
+'=========================================================
 ' Subroutine: SumPagoNetoCoordinacion
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This subroutine sums the "PAGO NETO" values from multiple sheets
 '   and stores the total in cell J4 of the target sheet. It first checks
@@ -23,7 +24,7 @@
 '   - If the active sheet is not included in the list of sheet names,
 '     its values will still be added to the sum.
 '   - The total sum is stored in cell J4 of the target sheet.
-'=======================================================================
+'=========================================================
 
 
 Sub SumPagoNetoCoordinacion()
@@ -43,25 +44,25 @@ Sub SumPagoNetoCoordinacion()
     totalPagoNeto = 0 ' Initialize sum
 
     ' Find last row in column P
-    lastRow = targetSheet.Cells(targetSheet.Rows.Count, "P").End(xlUp).Row
+    lastRow = targetSheet.Cells(targetSheet.Rows.Count, SHEET_NAMES_COLUMN).End(xlUp).Row
 
     ' Check if there are any sheet names listed
     If lastRow < 2 Then
         ' If no sheets are listed, only sum from the active sheet
         totalPagoNeto = SumPagoNetoFromSheets(Array(targetSheet.Name))
-        targetSheet.Range("J4").Value = totalPagoNeto
+        targetSheet.Range(TARGET_CELL).Value = totalPagoNeto
         Exit Sub
     End If
 
     ' Store sheet names into a collection
-    Set nameRange = targetSheet.Range("P2:P" & lastRow)
+    Set nameRange = targetSheet.Range(SHEET_NAMES_COLUMN & "2:" & SHEET_NAMES_COLUMN & lastRow)
     Set sheetNamesCollection = New Collection
 
     For Each cell In nameRange
         If cell.Value <> "" Then
             ' Check if the sheet exists
             If Not SheetExists(cell.Value) Then
-                MsgBox "Hoja '" & cell.Value & "' no existe.", vbExclamation, "Error"
+                MsgBox ERROR_SHEET_NOT_FOUND & cell.Value & "' no existe.", vbExclamation, "Error"
                 Exit Sub
             End If
             sheetNamesCollection.Add cell.Value
@@ -87,9 +88,9 @@ Sub SumPagoNetoCoordinacion()
     End If
 
     ' Store total sum in J4
-    targetSheet.Range("J4").Value = totalPagoNeto
+    targetSheet.Range(TARGET_CELL).Value = totalPagoNeto
     Exit Sub
 
 ErrorHandler:
-    MsgBox "Error. Porfavor contacta a tu administrador: " & Err.Description, vbCritical, "Error"
+    MsgBox ERROR_GENERIC & Err.Description, vbCritical, "Error"
 End Sub

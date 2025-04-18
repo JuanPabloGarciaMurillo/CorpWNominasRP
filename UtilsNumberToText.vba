@@ -1,7 +1,8 @@
-'==================================================
+'=========================================================
 ' Script: UtilsNumberToText
+' Version: 0.9.0
 ' Author: Juan Pablo Garcia Murillo
-' Date: 04/06/2025
+' Date: 04/18/2025
 ' Description:
 '   This module contains utility functions for converting numbers to their Spanish word representation, specifically for financial amounts in pesos.
 '   It includes functions for converting numbers to text, handling special cases, and validating input values. The module is designed to work with Excel VBA, making it easier to format and display numeric values in a human-readable format.
@@ -9,9 +10,9 @@
 ' Functions included in this module:
 '   - NumeroATexto
 '   - ConvertirMenor1000
-'==================================================
+'=========================================================
 
-'==================================================
+'=========================================================
 ' Function: NumeroATexto
 ' Description:
 '   This function converts a numeric value into its Spanish word representation,
@@ -25,7 +26,9 @@
 '   - Removes commas and spaces before processing.
 '   - Returns an error message if the input is non-numeric or exceeds 100,000.
 '   - Uses `ConvertirMenor1000` to process numbers less than 1000.
-'==================================================
+'=========================================================
+
+
 
 Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     ' Verifica que el valor sea numérico y lo limpia de comas y espacios.
@@ -38,8 +41,8 @@ Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     MyNumber = Val(MyNumber)        ' Convert to numeric value
     
     ' Limitar a 100,000
-    If MyNumber > 100000 Then
-        NumeroATexto = "ERROR: El número excede el límite permitido (100,000)"
+    If MyNumber > MAX_LIMIT Then
+        NumeroATexto = "ERROR: El número excede el límite permitido (" & MAX_LIMIT & ")"
         Exit Function
     End If
     
@@ -52,7 +55,7 @@ Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     
     ' Convertir la parte entera (integer part)
     If entero = 0 Then
-        resultado = "CERO"
+        resultado = ZERO_TEXT
     Else
         If entero >= 1000 Then
             Dim miles As Long
@@ -72,13 +75,13 @@ Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     End If
     
     ' Add the decimal part in the format "/100"
-    resultado = resultado & " PESOS " & Format(decimales, "00") & "/100"
+    resultado = resultado & " " & PESOS_TEXT & " " & Format(decimales, "00") & "/100"
     
     ' Return the final result
     NumeroATexto = Application.Trim(resultado)
 End Function
 
-'==================================================
+'=========================================================
 ' Function: ConvertirMenor1000
 ' Description:
 '   This function converts a number less than 1000 into its Spanish word representation.
@@ -93,7 +96,7 @@ End Function
 '   - Uses predefined arrays for special cases, units, tens, and hundreds.
 '   - Handles unique Spanish numbering rules such as "VEINTIUNO" instead of "VEINTE Y UNO".
 '   - "CIEN" is used for exactly 100, while "CIENTO" is used for numbers like 101-199.
-'==================================================
+'=========================================================
 
 Public Function ConvertirMenor1000(n As Long) As String
     ' Arreglos para números especiales y componentes
