@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: CreateCoordinatorAndPromotorTabs
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -68,7 +68,7 @@ Sub CreateCoordinatorAndPromotorTabs()
     
     Exit Sub
     
-ErrHandler:
+    ErrHandler:
     If Err.Number <> 0 Then
         Debug.Print "Error in CreateCoordinatorAndPromotorTabs: " & Err.Description
         HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "CreateCoordinatorAndPromotorTabs"

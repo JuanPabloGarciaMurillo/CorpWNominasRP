@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: Worksheet(Gerente)
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -38,15 +38,15 @@
 Private Sub Worksheet_Change(ByVal Target As Range)
     Dim wsColaboradores As Worksheet
     Dim activeTable As ListObject
-    Dim aliases As Collection
+    Dim aliases     As Collection
     Dim gerenteAlias As String
     Dim validationRange As Range
     Dim managerCell As Range
     Dim wsDashboard As Worksheet
-    Dim pivotTable As PivotTable
+    Dim pivotTable  As PivotTable
     Dim coordColumnIndex As Long
     Dim promotorColumnIndex As Long
-
+    
     ' Set the named range for the manager's name
     Set managerCell = Me.Range("Nombre_Gerente")
     ' Check if the change occurred in the named range "Nombre_Gerente"
@@ -57,7 +57,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
             MsgBox ERROR_EMPTY_MANAGER_CELL, vbExclamation, "Error"
             Exit Sub
         End If
-
+        
         ' Ensure the active sheet is renamed correctly
         If RenameGerenteTabToAlias() = "" Then
             MsgBox ERROR_NO_VALID_MANAGER, vbExclamation, "Error"
@@ -67,7 +67,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         ' Get the manager alias for the name in the named range
         gerenteAlias = GetManagerAliasFromNombreGerente()
         If gerenteAlias = "" Then Exit Sub
-
+        
         ' Set the Colaboradores sheet and the Coordinadores_Gerencia_Activa table
         Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
         Set activeTable = wsColaboradores.ListObjects(ACTIVE_TABLE)
@@ -81,7 +81,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         
         ' Check if there are no aliases
         If aliases.Count = 0 Then
-            MsgBox ERROR_NO_COORDINATORS & managerCell.value & "'.", vbInformation, "Sin Resultados"
+            MsgBox ERROR_NO_COORDINATORS & managerCell.value &        '.", vbInformation, "Sin Resultados"
             Exit Sub
         End If
         
@@ -93,10 +93,10 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Call SortTableAlphabetically(activeTable, coordColumnIndex)
         
     End If
-
+    
     ' Refresh all pivot tables on the Dashboard sheet
     On Error Resume Next
-
+    
     Set wsDashboard = ThisWorkbook.Sheets(RESULTADOS_SHEET)
     If Not wsDashboard Is Nothing Then
         For Each pivotTable In wsDashboard.PivotTables
@@ -104,17 +104,17 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Next pivotTable
     End If
     On Error GoTo 0
-
+    
     ' Check if the change occurred in the "COORDINADOR" column
     If Not Intersect(Target, Me.ListObjects(1).ListColumns(COORDINADOR_COLUMN).DataBodyRange) Is Nothing Then
         On Error GoTo ErrorHandler
         
-        Dim cell As Range
+        Dim cell    As Range
         
         ' Get dynamic column indices
         coordColumnIndex = Me.ListObjects(1).ListColumns(COORDINADOR_COLUMN).Index
         promotorColumnIndex = Me.ListObjects(1).ListColumns(PROMOTOR_COLUMN).Index
-
+        
         For Each cell In Intersect(Target, Me.ListObjects(1).ListColumns(COORDINADOR_COLUMN).DataBodyRange)
             ' Set the validation range to the corresponding cell in the "PROMOTOR" column
             Set validationRange = Me.ListObjects(1).ListColumns(PROMOTOR_COLUMN).DataBodyRange.Cells(cell.Row - Me.ListObjects(1).DataBodyRange.Row + 1)
@@ -124,8 +124,8 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     End If
     
     Exit Sub
-
-ErrorHandler:
+    
+    ErrorHandler:
     MsgBox ERROR_UPDATE_TABLE & Err.Description & vbNewLine & "Error en la fila: " & Target.row, vbCritical, "Error"
     If Err.Number <> 0 Then
         MsgBox ERROR_UPDATE_DASHBOARD & Err.Description, vbCritical, "Error"
@@ -150,28 +150,28 @@ End Sub
 '=========================================================
 Private Sub Worksheet_Calculate()
     On Error GoTo ErrorHandler
-    Dim wsCurrent As Worksheet
-    Dim tblGerente As ListObject
-    Dim coordRange As Range
-    Dim coordCell As Range
+    Dim wsCurrent   As Worksheet
+    Dim tblGerente  As ListObject
+    Dim coordRange  As Range
+    Dim coordCell   As Range
     Dim promotorCell As Range
     Dim promotorColumn As ListColumn
-
+    
     ' Set the current sheet
     Set wsCurrent = Me
-
+    
     ' Dynamically retrieve the only table on the sheet
     If wsCurrent.ListObjects.Count = 1 Then
         Set tblGerente = wsCurrent.ListObjects(1)
     Else
-        MsgBox "Error: No table or multiple tables found on the sheet.", vbCritical, "Error"
+        MsgBox "Error: No table Or multiple tables found On the sheet.", vbCritical, "Error"
         Exit Sub
     End If
-
+    
     ' Get the range of "COORDINADOR" within the table
     Set coordRange = tblGerente.ListColumns(COORDINADOR_COLUMN).DataBodyRange
     Set promotorColumn = tblGerente.ListColumns(PROMOTOR_COLUMN)
-
+    
     ' Loop through each cell in "COORDINADOR"
     For Each coordCell In coordRange
         ' Set the corresponding "PROMOTOR" cell dynamically
@@ -179,9 +179,9 @@ Private Sub Worksheet_Calculate()
         ' Process the row
         ProcessRow coordCell, promotorCell
     Next coordCell
-
+    
     Exit Sub
-
-ErrorHandler:
-    MsgBox "An error occurred in Worksheet_Calculate: " & Err.Description, vbCritical, "Error"
+    
+    ErrorHandler:
+    MsgBox "An Error occurred in Worksheet_Calculate: " & Err.Description, vbCritical, "Error"
 End Sub

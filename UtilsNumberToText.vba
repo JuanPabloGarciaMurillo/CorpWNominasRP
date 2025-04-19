@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsNumberToText
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -27,8 +27,6 @@
 '   - Returns an error message if the input is non-numeric or exceeds 100,000.
 '   - Uses `ConvertirMenor1000` to process numbers less than 1000.
 '=========================================================
-
-
 
 Public Function NumeroATexto(ByVal MyNumber As Variant) As String
     ' Verifica que el valor sea numérico y lo limpia de comas y espacios.

@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsCollections
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -73,11 +73,11 @@ Public Function IsInArray(value As Variant, arr As Variant, Optional caseInsensi
         If caseInsensitive Then arrayValue = LCase(arrayValue)
         
         If arrayValue = strValue Then
-            IsInArray = True
+            IsInArray = TRUE
             Exit Function
         End If
     Next i
-    IsInArray = False
+    IsInArray = FALSE
 End Function
 
 '=========================================================
@@ -94,13 +94,13 @@ End Function
 '   - The function iterates through the collection and assigns each value to the array.
 '=========================================================
 Public Function CollectionToArray(coll As Collection) As Variant
-    Dim arr() As String
-    Dim i As Integer
-
+    Dim arr()       As String
+    Dim i           As Integer
+    
     ReDim arr(1 To coll.Count)
     For i = 1 To coll.Count
         arr(i) = coll(i)
     Next i
-
+    
     CollectionToArray = arr
 End Function
