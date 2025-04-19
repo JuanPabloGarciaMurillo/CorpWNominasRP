@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsValidation
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -29,16 +29,16 @@
 Public Function GetAliasList(ByVal coordValue As String) As String
     
     Dim validationFormula As String
-    Dim result As Variant
-
+    Dim result      As Variant
+    
     ' Build the formula to retrieve the alias list dynamically
     validationFormula = "=TEXTJOIN("","", TRUE, IF(" & PROMOTORES_TABLE & "[" & COORDINACION_COLUMN & "] = """ & coordValue & """, " & PROMOTORES_TABLE & "[" & ALIAS_COLUMN & "], """"))"
-
+    
     ' Evaluate the formula
     On Error Resume Next
     result = Evaluate(validationFormula)
     On Error GoTo 0
-
+    
     ' Return the result as a trimmed string
     If IsError(result) Or IsEmpty(result) Then
         GetAliasList = ""
@@ -64,7 +64,7 @@ Public Sub ClearValidation(ByVal validationRange As Range)
     If validationRange Is Nothing Then
         Exit Sub
     End If
-
+    
     On Error Resume Next
     validationRange.Validation.Delete
     On Error GoTo 0
@@ -88,25 +88,25 @@ Public Sub ApplyValidation(ByVal validationRange As Range, ByVal aliasList As St
     If validationRange Is Nothing Then
         Exit Sub
     End If
-
+    
     If aliasList = "" Then
         Exit Sub
     End If
-
+    
     Dim aliasArray() As String
-    Dim i As Long
-
+    Dim i           As Long
+    
     ' Split alias list into array and trim spaces
     aliasArray = Split(aliasList, ",")
     For i = LBound(aliasArray) To UBound(aliasArray)
         aliasArray(i) = Trim(aliasArray(i))
     Next i
-
+    
     ' Apply validation
     On Error Resume Next
     validationRange.Validation.Delete
     validationRange.Validation.Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, _
-        Operator:=xlBetween, Formula1:=Join(aliasArray, ",")
+                                   Operator:=xlBetween, Formula1:=Join(aliasArray, ",")
     On Error GoTo 0
 End Sub
 
@@ -126,44 +126,44 @@ End Sub
 '=========================================================
 
 Public Sub ApplyDynamicValidation(ByVal ws As Worksheet, ByVal tableName As String, ByVal valueColumnName As String, ByVal validatedColumnName As String)
-    Dim tbl As ListObject
-    Dim row As ListRow
-    Dim coordValue As String
-    Dim aliasList As String
+    Dim tbl         As ListObject
+    Dim row         As ListRow
+    Dim coordValue  As String
+    Dim aliasList   As String
     Dim validationRange As Range
     Dim valueColumnIndex As Long
     Dim validatedColumnIndex As Long
-
+    
     ' Set references
     On Error Resume Next
     Set tbl = ws.ListObjects(tableName)
     On Error GoTo 0
-
+    
     If tbl Is Nothing Then
         Exit Sub
     End If
-
+    
     On Error Resume Next
     valueColumnIndex = tbl.ListColumns(valueColumnName).Index
     validatedColumnIndex = tbl.ListColumns(validatedColumnName).Index
     On Error GoTo 0
-
+    
     If valueColumnIndex = 0 Or validatedColumnIndex = 0 Then
         Exit Sub
     End If
-
+    
     ' Loop through each row in the table
     For Each row In tbl.ListRows
-        coordValue = row.Range.Cells(1, valueColumnIndex).Value ' Get COORDINADOR value
+        coordValue = row.Range.Cells(1, valueColumnIndex).Value        ' Get COORDINADOR value
         Set validationRange = row.Range.Cells(1, validatedColumnIndex)
-
+        
         If coordValue = "" Then
             ' If value is empty, clear validation
             ClearValidation validationRange
         Else
             ' Get alias list
             aliasList = GetAliasList(coordValue)
-
+            
             ' Apply validation if alias list is not empty
             If aliasList <> "" Then
                 ApplyValidation validationRange, aliasList
@@ -180,7 +180,7 @@ End Sub
 '   This subroutine processes a row in the table and applies validation based on the COORDINADOR value.
 ' Parameters:
 '   - coordCell (Range): The cell containing the COORDINADOR value.
-'   - promotorCell (Range): The cell to apply validation to. 
+'   - promotorCell (Range): The cell to apply validation to.
 ' Returns:
 '   - None
 ' Notes:
@@ -191,27 +191,27 @@ End Sub
 '   - It assumes the alias list is a comma-separated string.
 '=========================================================
 Public Sub ProcessRow(coordCell As Range, promotorCell As Range)
-    Dim aliasList As String
+    Dim aliasList   As String
     Dim currentValidation As String
-
+    
     ' Skip processing if COORDINADOR is empty
     If coordCell.Value = "" Then
         ClearValidation promotorCell
         Exit Sub
     End If
-
+    
     ' Get the alias list for the COORDINADOR value
     aliasList = GetAliasList(coordCell.Value)
-
+    
     ' Check if the current validation matches the alias list
     On Error Resume Next
     currentValidation = promotorCell.Validation.Formula1
     On Error GoTo 0
-
+    
     If aliasList = currentValidation Then
-        Exit Sub ' Validation is already correct
+        Exit Sub        ' Validation is already correct
     End If
-
+    
     ' Apply validation if alias list is not empty, otherwise clear validation
     If aliasList <> "" Then
         ApplyValidation promotorCell, aliasList

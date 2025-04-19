@@ -1,6 +1,6 @@
 '=========================================================
 ' Module: Constants
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -73,13 +73,13 @@ Public Const TARGET_CELL As String = "J4"
 Public Const MANAGER_IDENTIFIER As String = "GERENTE"
 
 ' Error Message Constants
-Public Const ERROR_SHEET_NOT_FOUND As String = "Hoja '"
+Public Const ERROR_SHEET_NOT_FOUND As String = "Hoja        '"
 Public Const ERROR_GENERIC As String = "Error. Porfavor contacta a tu administrador: "
 Public Const ERROR_INVALID_SHEET As String = "La hoja destino no es válida."
 Public Const ERROR_NO_VALID_MANAGER As String = "No se encontraron gerentes válidos. Saliendo de la macro."
 Public Const ERROR_NO_VALID_COORDINATOR As String = "No se encontraron coordinadores válidos. Saliendo de la macro."
-Public Const ERROR_EMPTY_MANAGER_CELL As String = "La celda 'Nombre_Gerente' está vacía. Por favor, ingrese un nombre de gerente válido."
-Public Const ERROR_NO_COORDINATORS As String = "No se encontraron coordinadores para el gerente '"
+Public Const ERROR_EMPTY_MANAGER_CELL As String = "La celda        'Nombre_Gerente' está vacía. Por favor, ingrese un nombre de gerente válido."
+Public Const ERROR_NO_COORDINATORS As String = "No se encontraron coordinadores para el gerente        '"
 Public Const ERROR_UPDATE_TABLE As String = "Error al actualizar la tabla Coordinadores_Gerencia_Activa: "
 Public Const ERROR_UPDATE_DASHBOARD As String = "Error al actualizar la tabla Coordinadores_Gerencia_Activa o los gráficos del Dashboard: "
 Public Const ERROR_KEY_EXISTS As String = "El valor ya existe: "

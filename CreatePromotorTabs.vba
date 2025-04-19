@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: CreatePromotorTabs
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -22,23 +22,32 @@
 
 Public Sub CreatePromotorTabs()
     On Error GoTo ErrHandler
+    OptimizeApplicationSettings
+    
     Dim wsSource    As Worksheet
     Dim templateSheet As Worksheet
-    Dim promotorName As Variant
-    Dim promotorDict As clsDictionary
     Dim newTab      As Worksheet
     Dim cell        As Range
-    Dim promotorColumn As Range
     Dim tableStartRow As Long
     Dim tableObj    As ListObject
     Dim lastDataRow As Long
     Dim i           As Integer
     Dim ws          As Worksheet
-    Dim sheetState  As Collection
-    Dim newTabs     As Collection
-    Dim headerMapping As clsDictionary
+    Dim idx         As Integer
     Dim header      As String
+    Dim headerMapping As clsDictionary
+    Dim headersArray     As Variant
+    Dim sheetState  As Collection
     Dim wsColaboradores As Worksheet
+    Dim columnIndex As Variant
+    Dim razonSocial As Variant
+    Dim periodoDelPagoDel As Variant
+    Dim fechaDeExpedicion As Variant
+    Dim periodoDelPagoAl As Variant
+    Dim promotorName As Variant
+    Dim promotorDict As clsDictionary
+    Dim promotorColumn As Range
+    Dim newTabs     As Collection
     Dim wsTabuladores As Worksheet
     Dim promotorTable As ListObject
     Dim baseSalaryTable As ListObject
@@ -48,14 +57,7 @@ Public Sub CreatePromotorTabs()
     Dim tabuladorRow As ListRow
     Dim promotorMatch As Boolean
     Dim coordinatorName As String
-    Dim idx         As Integer
     Dim promotorColumnIndex As Long
-    Dim headersArray     As Variant
-    Dim columnIndex As Variant
-    Dim razonSocial As Variant
-    Dim periodoDelPagoDel As Variant
-    Dim fechaDeExpedicion As Variant
-    Dim periodoDelPagoAl As Variant
     
     ' Initialize dictionaries using the custom dictionary class
     Set headerMapping = New clsDictionary
@@ -64,17 +66,18 @@ Public Sub CreatePromotorTabs()
     ' Set the source sheet as the active sheet where the button is clicked
     Set wsSource = ActiveSheet
     Set templateSheet = ThisWorkbook.Sheets(PROMOTORES_SHEET)
-    
     Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
     Set wsTabuladores = ThisWorkbook.Sheets(TABULADORES_SHEET)
-    
-    ' Create a dictionary to store the visibility status of sheets
-    Set sheetState = New Collection
-    Set newTabs = New Collection
     
     ' Set the tables
     Set promotorTable = wsColaboradores.ListObjects(PROMOTORES_TABLE)
     Set baseSalaryTable = wsTabuladores.ListObjects(SUELDOS_BASE_TABLE)
+    ' Create a dictionary to store the visibility status of sheets
+    Set sheetState = New Collection
+    Set newTabs = New Collection
+    
+    ' Set the table range using ListObjects (Excel table object)
+    Set tableObj = wsSource.ListObjects(1)
     
     ' Define headers and their corresponding column indices
     headersArray = Split(HEADERS, ",")
@@ -92,9 +95,6 @@ Public Sub CreatePromotorTabs()
         sheetState.Add ws.Visible, ws.Name
         ws.Visible = xlSheetVisible
     Next ws
-    
-    ' Set the table range using ListObjects (Excel table object)
-    Set tableObj = wsSource.ListObjects(1)
     
     ' Define the start row for the table
     tableStartRow = 9
@@ -138,26 +138,16 @@ Public Sub CreatePromotorTabs()
             promotorDict.Add promotorName, Nothing
         End If
     Next cell
+    
     ' Prevent errors if no promotors are found
     If promotorDict.Count = 0 Then
-        ' Restore screen updating and automatic calculation
-        Application.ScreenUpdating = TRUE
-        Application.Calculation = xlCalculationAutomatic
+        ' Restore application settings
+        RestoreApplicationSettings
         
-        ' Hide all tabs that were unhidden
-        For Each ws In ThisWorkbook.Sheets
-            If Not IsInNewTabs(ws.Name, newTabs) Then
-                ws.Visible = sheetState(ws.Name)
-            End If
-        Next ws
-        
-        ' Exit silently
+        ' Restore sheet visibility and exit
+        RestoreSheetVisibility sheetState, newTabs
         Exit Sub
     End If
-    
-    ' Turn off screen updating and automatic calculation for performance
-    Application.ScreenUpdating = FALSE
-    Application.Calculation = xlCalculationManual
     
     promotorColumnIndex = tableObj.ListColumns(PROMOTOR_COLUMN).Index
     
@@ -178,12 +168,9 @@ Public Sub CreatePromotorTabs()
             GoTo ErrHandler
         End If
         
-        ' Recreate the tab from the template
-        templateSheet.Copy After:=wsSource
-        Set newTab = ThisWorkbook.Sheets(wsSource.Index + 1)
-        newTab.Name = promotorName
-        newTab.Visible = xlSheetVisible
-        newTabs.Add newTab.Name
+        ' Create a new tab
+        Set newTab = CreateNewTab(templateSheet, promotorName, wsSource, newTabs)
+        
         ' Ensure correct table reference in copied sheet
         Dim newTable As ListObject
         Set newTable = newTab.ListObjects(1)
@@ -215,6 +202,7 @@ Public Sub CreatePromotorTabs()
         ' Set the promotor's name in B1 (merged B1:D1)
         newTab.Range("B1:D1").Value = promotorAlias
     Next promotorName
+    
     ' Collect valid tabs based on promotors with a base salary
     Dim validTabs   As Collection
     Set validTabs = New Collection
@@ -222,20 +210,19 @@ Public Sub CreatePromotorTabs()
     For Each promotorName In promotorDict.GetKeys
         validTabs.Add promotorName
     Next promotorName
+    
     ' Get the values to copy from the active sheet (B2, B3, B6, D3)
     razonSocial = wsSource.Range("B2").Value
     periodoDelPagoDel = wsSource.Range("B3").Value
     fechaDeExpedicion = wsSource.Range("B6").Value
     periodoDelPagoAl = wsSource.Range("D3").Value
+    
     ' Now loop through each new tab and paste the values into the corresponding cells (B2, B3, B6, D3)
     For Each promotorName In newTabs
         Set newTab = ThisWorkbook.Sheets(promotorName)
         
-        ' Paste the values into the corresponding cells
-        newTab.Range("B2").Value = razonSocial
-        newTab.Range("B3").Value = periodoDelPagoDel
-        newTab.Range("B6").Value = fechaDeExpedicion
-        newTab.Range("D3").Value = periodoDelPagoAl
+        ' Use the reusable function to copy shared values
+        PasteCommonValues newTab, razonSocial, periodoDelPagoDel, fechaDeExpedicion, periodoDelPagoAl
         
         ' Auto-fit columns after pasting data
         newTab.Cells.EntireColumn.AutoFit
@@ -270,35 +257,7 @@ Public Sub CreatePromotorTabs()
             ' Only loop through the filtered rows if there are visible cells
             If Not visibleCells Is Nothing Then
                 ' Loop through filtered rows
-                For Each cell In visibleCells.Columns(1).Cells
-                    If cell.row >= tableStartRow And Not IsRowEmpty(wsSource, cell.row) Then
-                        ' Add a new row to the new table
-                        Set newRow = newTable.ListRows.Add
-                        If newRow Is Nothing Then
-                            MsgBox "Failed To add a New row To the target table.", vbCritical
-                            Exit Sub
-                        End If
-                        For i = 1 To tableObj.ListColumns.Count
-                            header = tableObj.ListColumns(i).Name
-                            
-                            ' Skip headers that are not in the headerMapping dictionary
-                            If Not headerMapping.Exists(header) Then
-                                GoTo NextHeader
-                            End If
-                            
-                            ' Process valid headers
-                            Dim targetColumnIndex As Long
-                            targetColumnIndex = headerMapping.GetValue(header)
-                            If targetColumnIndex > 0 And targetColumnIndex <= newTable.ListColumns.Count Then
-                                newRow.Range(1, targetColumnIndex).Value = wsSource.Cells(cell.Row, i).Value
-                            Else
-                                MsgBox "Invalid column index For header: " & header & ", Index: " & targetColumnIndex, vbCritical
-                            End If
-                            
-                            NextHeader:
-                        Next i
-                    End If
-                Next cell
+                Call PopulateTable(newTable, visibleCells, tableObj, headerMapping, tableStartRow, wsSource)
                 
                 ' Auto-fit columns after inserting data
                 newTab.Cells.EntireColumn.AutoFit
@@ -312,6 +271,8 @@ Public Sub CreatePromotorTabs()
         
     Next promotorName
     
+    RestoreApplicationSettings
+    
     ' Reset the filter
     If wsSource.AutoFilterMode Then
         wsSource.AutoFilterMode = FALSE
@@ -320,41 +281,21 @@ Public Sub CreatePromotorTabs()
     ' Restore the original filter state in the active sheet
     tableObj.Range.AutoFilter Field:=promotorColumnIndex
     
-    ' Restore screen updating and automatic calculation
-    Application.ScreenUpdating = TRUE
-    Application.Calculation = xlCalculationAutomatic
+    RestoreSheetVisibility sheetState, newTabs
     
-    ' Hide the sheets back to their original state, excluding new tabs
-    For Each ws In ThisWorkbook.Sheets
-        If Not IsInNewTabs(ws.Name, newTabs) Then
-            ws.Visible = sheetState(ws.Name)
-        End If
-    Next ws
-
     ' Call SumPagoNetoCoordinacion at the end
     If Not newTabs Is Nothing And newTabs.Count > 0 Then
-        Call SumPagoNetoCoordinacion(newTabs, wsSource)    
+        Call SumPagoNetoCoordinacion(newTabs, wsSource)
     End If
     
-ErrHandler:
+    ErrHandler:
     If Err.Number <> 0 Then
         Debug.Print "Error in CreatePromotorTabs: " & Err.Description
         HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "CreatePromotorTabs"
     End If
-
-    ' Restore the original visibility state of the sheets
-    On Error Resume Next
-    For Each ws In ThisWorkbook.Sheets
-        If sheetState(ws.Name) <> xlSheetVisible Then
-            ws.Visible = sheetState(ws.Name)
-        End If
-    Next ws
-    On Error GoTo 0
-
-    ' Restore application settings
-    Application.CutCopyMode = False
-    Application.ScreenUpdating = True
-    Application.Calculation = xlCalculationAutomatic
+    
+    RestoreSheetVisibility sheetState, newTabs
+    RestoreApplicationSettings
     Exit Sub
     
 End Sub

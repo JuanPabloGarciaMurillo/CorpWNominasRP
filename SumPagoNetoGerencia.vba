@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: SumPagoNetoGerencia
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -23,28 +23,28 @@
 Public Sub SumPagoNetoGerencia(targetSheet As Worksheet)
     On Error GoTo ErrorHandler
     Dim managerPagoNeto As Currency
-    Dim total As Currency
-
+    Dim total       As Currency
+    
     ' Validate targetSheet
     If targetSheet Is Nothing Then
         MsgBox ERROR_INVALID_SHEET, vbExclamation, "Error"
         Exit Sub
     End If
-
+    
     ' Perform the calculation for all sheets
     total = SumPagoNetoFromSheets(Empty)
-
+    
     ' Add the "PAGO NETO" value from the manager sheet
     managerPagoNeto = GetManagerPagoNeto(targetSheet)
-
+    
     ' Add the manager's "PAGO NETO" to the total
     total = total + managerPagoNeto
-
+    
     ' Store the result in the target cell
     targetSheet.Range(TARGET_CELL).Value = total
-
+    
     Exit Sub
-
-ErrorHandler:
+    
+    ErrorHandler:
     MsgBox ERROR_GENERIC & Err.Description, vbCritical, "Error", "SumPagoNetoGerencia"
 End Sub

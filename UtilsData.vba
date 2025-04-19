@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsData
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -9,6 +9,8 @@
 '   - SumPagoNetoFromSheets
 '   - IsRowEmpty
 '   - GetManagerPagoNeto
+'   - StoreTotalInTargetCell
+'   - PasteCommonValues
 '=========================================================
 
 '=========================================================
@@ -37,7 +39,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Dim skipSheets() As String
     
     On Error GoTo ErrorHandler
-
+    
     ' Initialize variables
     totalPagoNeto = 0
     processAllSheets = IsEmpty(sheetNames)
@@ -146,15 +148,15 @@ End Function
 '   - If the value in column E is not numeric, it returns 0.
 '=========================================================
 Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
-    Dim lastRow As Long
-    Dim rowIndex As Long
+    Dim lastRow     As Long
+    Dim rowIndex    As Long
     Dim pagoNetoValue As Currency
-
+    
     On Error GoTo ErrorHandler
-
+    
     ' Find the last row in column A
     lastRow = managerSheet.Range(COLUMN_A & managerSheet.Rows.Count).End(xlUp).Row
-
+    
     ' Loop through column A to find "PAGO NETO"
     For rowIndex = 1 To lastRow
         If UCase(managerSheet.Range(COLUMN_A & rowIndex).Value) = PAGO_NETO_TEXT Then
@@ -165,12 +167,12 @@ Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
             Exit For
         End If
     Next rowIndex
-
+    
     ' Return the value
     GetManagerPagoNeto = pagoNetoValue
     Exit Function
-
-ErrorHandler:
+    
+    ErrorHandler:
     Debug.Print "Error in GetManagerPagoNeto: " & Err.Description
     HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "GetManagerPagoNeto"
     GetManagerPagoNeto = 0
@@ -192,4 +194,30 @@ End Function
 ' Subroutine to store the total sum in the target cell
 Public Sub StoreTotalInTargetCell(targetSheet As Worksheet, total As Currency)
     targetSheet.Range(TARGET_CELL).Value = total
+End Sub
+
+'=========================================================
+' Subroutine: PasteCommonValues
+' Description:
+'   Copies shared values (e.g., "razonSocial", "periodoDelPagoDel") to a target worksheet.
+' Parameters:
+'   - targetSheet (Worksheet): The worksheet where the values will be copied.
+'   - razonSocial (Variant): The value to copy to cell B2.
+'   - periodoDelPagoDel (Variant): The value to copy to cell B3.
+'   - fechaDeExpedicion (Variant): The value to copy to cell B6.
+'   - periodoDelPagoAl (Variant): The value to copy to cell D3.
+' Returns:
+'   - None
+' Notes:
+'   - This function is reusable for any worksheet where these values need to be copied.
+'=========================================================
+Public Sub PasteCommonValues(targetSheet As Worksheet, razonSocial As Variant, periodoDelPagoDel As Variant, _
+    fechaDeExpedicion As Variant, periodoDelPagoAl As Variant)
+    ' Paste the values into the corresponding cells
+    With targetSheet
+        .Range("B2").Value = razonSocial
+        .Range("B3").Value = periodoDelPagoDel
+        .Range("B6").Value = fechaDeExpedicion
+        .Range("D3").Value = periodoDelPagoAl
+    End With
 End Sub

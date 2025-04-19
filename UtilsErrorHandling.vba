@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsErrorHandling
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -25,14 +25,14 @@
 '=========================================================
 Public Sub HandleError(errorMessage As String, Optional errorSource As String = "")
     Dim fullMessage As String
-
+    
     ' Construct the full error message
     If errorSource <> "" Then
         fullMessage = "Error in [" & errorSource & "]: " & errorMessage
     Else
         fullMessage = errorMessage
     End If
-
+    
     ' Display the error message
     MsgBox ERROR_GENERIC & fullMessage, vbCritical, "Error"
 End Sub

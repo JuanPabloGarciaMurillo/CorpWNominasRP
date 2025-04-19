@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsManager
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -26,43 +26,42 @@
 '   -  It retrieves the manager's name from cell B1 and uses it to call the GetCoordinatorAliases function.
 '=========================================================
 
-
 Public Function GetManagerAliasFromNombreGerente() As String
     Dim wsColaboradores As Worksheet
     Dim gerentesTbl As ListObject
     Dim gerenteNombre As String
     Dim gerenteAlias As String
-    Dim foundRow As Range
-
+    Dim foundRow    As Range
+    
     On Error GoTo ErrorHandler
-
+    
     ' Get the manager's name from the named range "Nombre_Gerente"
     gerenteNombre = Trim(ThisWorkbook.ActiveSheet.Range("Nombre_Gerente").Value)
-
+    
     ' Check if the named range is empty
     If gerenteNombre = "" Then
-        MsgBox "La celda 'Nombre_Gerente' está vacía. Por favor, ingrese un nombre válido.", vbExclamation, "Error"
+        MsgBox "La celda        'Nombre_Gerente' está vacía. Por favor, ingrese un nombre válido.", vbExclamation, "Error"
         Exit Function
     End If
-
+    
     ' Set the Colaboradores sheet and Gerentes table
     Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
     Set gerentesTbl = wsColaboradores.ListObjects(GERENTES_TABLE)
-
+    
     ' Find the alias for the manager in the Gerentes table
     Set foundRow = gerentesTbl.ListColumns(NOMBRE_COLUMN).DataBodyRange.Find(What:=gerenteNombre, LookIn:=xlValues, LookAt:=xlWhole)
-
+    
     If Not foundRow Is Nothing Then
-        gerenteAlias = foundRow.Offset(0, 1).Value ' Assuming the alias is in the next column
+        gerenteAlias = foundRow.Offset(0, 1).Value        ' Assuming the alias is in the next column
         GetManagerAliasFromNombreGerente = gerenteAlias
     Else
-        MsgBox "El Gerente '" & gerenteNombre & "' no se encuentra en la tabla de Gerentes.", vbExclamation, "Error"
+        MsgBox "El Gerente        '" & gerenteNombre & "' no se encuentra en la tabla de Gerentes.", vbExclamation, "Error"
         Exit Function
     End If
-
+    
     Exit Function
-
-ErrorHandler:
+    
+    ErrorHandler:
     MsgBox "Error en la función GetManagerAliasFromNombreGerente: " & Err.Description, vbCritical, "Error"
     GetManagerAliasFromNombreGerente = ""
 End Function
@@ -84,13 +83,13 @@ End Function
 Public Function RenameGerenteTabToAlias() As String
     On Error GoTo ErrHandler
     
-    Dim wsActive As Worksheet
+    Dim wsActive    As Worksheet
     Set wsActive = ActiveSheet
     
-    Dim aliasName As String
-    Dim wsColab As Worksheet
-    Dim tbl As ListObject
-
+    Dim aliasName   As String
+    Dim wsColab     As Worksheet
+    Dim tbl         As ListObject
+    
     ' Get the manager alias using the existing function
     aliasName = GetManagerAliasFromNombreGerente()
     
@@ -111,23 +110,23 @@ Public Function RenameGerenteTabToAlias() As String
     
     ' Check if the current sheet name matches the alias
     If wsActive.Name = aliasName Then
-        RenameGerenteTabToAlias = aliasName ' Return the alias without renaming
+        RenameGerenteTabToAlias = aliasName        ' Return the alias without renaming
         Exit Function
     End If
     
     ' Check if a sheet with the same name already exists
     If SheetExists(aliasName) Then
-        MsgBox "No se puede renombrar: La hoja llamada '" & aliasName & "' ya existe.", vbExclamation, "RenameGerenteTabToAlias"
+        MsgBox "No se puede renombrar: La hoja llamada        '" & aliasName & "' ya existe.", vbExclamation, "RenameGerenteTabToAlias"
         RenameGerenteTabToAlias = ""
         Exit Function
     End If
     
     ' Rename the sheet
     wsActive.Name = aliasName
-    RenameGerenteTabToAlias = aliasName ' Return the alias
+    RenameGerenteTabToAlias = aliasName        ' Return the alias
     Exit Function
-
-ErrHandler:
+    
+    ErrHandler:
     MsgBox "Error al renombrar la hoja del gerente: " & Err.Description, vbCritical, "RenameGerenteTabToAlias"
     RenameGerenteTabToAlias = ""
 End Function

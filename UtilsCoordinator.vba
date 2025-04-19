@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsCoordinator
-' Version: 0.9.1
+' Version: 0.9.2
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -27,7 +27,7 @@
 '   - It retrieves the GERENCIA and ALIAS columns from the table.
 '=========================================================
 Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "") As Collection
-    Dim aliases As Collection
+    Dim aliases     As Collection
     Dim wsColaboradores As Worksheet
     Dim coordinadoresTable As ListObject
     Dim coordinatorRow As ListRow
@@ -36,17 +36,17 @@ Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "")
     
     ' Initialize the collection to store aliases
     Set aliases = New Collection
-
+    
     On Error GoTo ErrorHandler
-
+    
     ' If no manager name is provided, use GetManagerAliasFromNombreGerente
     If managerName = "" Then
         Dim managerAlias As String
         managerAlias = GetManagerAliasFromNombreGerente()
         If managerAlias = "" Then Exit Function
-        managerName = managerAlias ' Use the alias as the manager name
+        managerName = managerAlias        ' Use the alias as the manager name
     End If
-
+    
     Set wsColaboradores = ThisWorkbook.Sheets(COLABORADORES_SHEET)
     Set coordinadoresTable = wsColaboradores.ListObjects(COORDINADORES_TABLE)
     Set gerenciaColumn = coordinadoresTable.ListColumns(GERENCIA_COLUMN)
@@ -64,8 +64,8 @@ Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "")
     ' Return the collection of aliases
     Set GetCoordinatorAliases = aliases
     Exit Function
-
-ErrorHandler:
+    
+    ErrorHandler:
     MsgBox "Error en la función GetCoordinatorAliases, por favor contacta a tu administrador: " & Err.Description, vbCritical, "Error"
     Set GetCoordinatorAliases = Nothing
 End Function
@@ -91,9 +91,9 @@ Public Sub DeleteManagerCoordinatorTab()
         
         ' Check if the tab name ends with "(C)" (ignoring trailing spaces)
         If Right(Trim(tabName), Len(TAB_SUFFIX)) = TAB_SUFFIX Then
-            Application.DisplayAlerts = False
+            Application.DisplayAlerts = FALSE
             ws.Delete
-            Application.DisplayAlerts = True
+            Application.DisplayAlerts = TRUE
         End If
     Next ws
 End Sub
@@ -117,12 +117,11 @@ End Sub
 Public Function CreateCoordinatorTabs_newTabs() As Collection
     ' This function returns the newTabs collection
     If newTabs Is Nothing Then
-        MsgBox "Error: La colección 'newTabs' no está inicializada.", vbCritical, "Error"
+        MsgBox "Error: La colección        'newTabs' no está inicializada.", vbCritical, "Error"
         Exit Function
     End If
     Set CreateCoordinatorTabs_newTabs = newTabs
 End Function
-
 
 '=========================================================
 ' Function: GetPromotersForCoordinator
@@ -138,21 +137,21 @@ End Function
 '   - The function assumes that the "Promoters" sheet contains a table with the first column containing coordinator names and the second column containing promoter names.
 '=========================================================
 Public Function GetPromotersForCoordinator(coordinatorName As String) As Collection
-    Dim promoters As New Collection
+    Dim promoters   As New Collection
     Dim wsPromoters As Worksheet
     Dim promoterTable As ListObject
-    Dim row As ListRow
-
+    Dim row         As ListRow
+    
     ' Set the worksheet and table where the coordinator-promoter relationships are stored
     Set wsPromoters = ThisWorkbook.Sheets(PROMOTORES_SHEET)
     Set promoterTable = wsPromoters.ListObjects(PROMOTORES_TABLE)
-
+    
     ' Loop through the table to find promoters for the given coordinator
     For Each row In promoterTable.ListRows
         If UCase(row.Range(1, 1).Value) = UCase(coordinatorName) Then
             promoters.Add row.Range(1, 2).Value
         End If
     Next row
-
+    
     Set GetPromotersForCoordinator = promoters
 End Function
