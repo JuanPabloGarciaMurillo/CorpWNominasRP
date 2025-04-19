@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsSheet
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -11,6 +11,7 @@
 '   - DeleteUnprotectedTabs
 '   - SanitizeSheetName
 '   - IsInNewTabs
+'   - GetSheetNamesCollection
 '=========================================================
 
 '=========================================================
@@ -144,4 +145,40 @@ Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boole
     
     ' Default to False if not found
     IsInNewTabs = FALSE
+End Function
+
+'=========================================================
+' Function: GetSheetNamesCollection
+' Description:
+'    This function retrieves a collection of sheet names from a specified range in the active sheet.
+' Parameters:
+'   - nameRange (Range): The range containing the sheet names to check.
+'   - targetSheet (Worksheet): The worksheet to check against.
+'   - currentSheetIncluded (Boolean): A flag indicating if the current sheet is included in the collection.
+'   - ERROR_SHEET_NOT_FOUND (String): The error message to display if a sheet is not found.
+' Returns:
+'   - Collection: A collection of valid sheet names.
+' Notes:
+'   - The function uses a loop to iterate through the specified range.
+'   - It checks if each sheet name exists using the SheetExists function.
+'   - If a sheet name does not exist, a message box is displayed and the function exits.
+'=========================================================
+Public Function GetSheetNamesCollection(nameRange As Range, targetSheet As Worksheet, ByRef currentSheetIncluded As Boolean) As Collection
+    Dim sheetNamesCollection As New Collection
+    Dim cell As Range
+
+    For Each cell In nameRange
+        If cell.Value <> "" Then
+            If Not SheetExists(cell.Value) Then
+                MsgBox ERROR_SHEET_NOT_FOUND & cell.Value & "' no existe.", vbExclamation, "Error"
+                Exit Function
+            End If
+            sheetNamesCollection.Add cell.Value
+            If UCase(cell.Value) = UCase(targetSheet.Name) Then
+                currentSheetIncluded = True
+            End If
+        End If
+    Next cell
+
+    Set GetSheetNamesCollection = sheetNamesCollection
 End Function

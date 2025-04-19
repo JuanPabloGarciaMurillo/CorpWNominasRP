@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsCollections
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -9,6 +9,7 @@
 ' Functions included in this module:
 '   - KeyExists
 '   - IsInArray
+'   - CollectionToArray
 '=========================================================
 
 '=========================================================
@@ -77,4 +78,29 @@ Public Function IsInArray(value As Variant, arr As Variant, Optional caseInsensi
         End If
     Next i
     IsInArray = False
+End Function
+
+'=========================================================
+' Function: CollectionToArray
+' Description:
+'    Converts a Collection to an array.
+' Parameters:
+'   - coll (Collection): The collection to convert.
+' Returns:
+'   - arr (Variant): The converted array.
+' Notes:
+'   - The function assumes the collection contains string values.
+'   - The function uses ReDim to create a dynamic array based on the collection count.
+'   - The function iterates through the collection and assigns each value to the array.
+'=========================================================
+Public Function CollectionToArray(coll As Collection) As Variant
+    Dim arr() As String
+    Dim i As Integer
+
+    ReDim arr(1 To coll.Count)
+    For i = 1 To coll.Count
+        arr(i) = coll(i)
+    Next i
+
+    CollectionToArray = arr
 End Function

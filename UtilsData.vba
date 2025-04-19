@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsData
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -37,7 +37,7 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Dim skipSheets() As String
     
     On Error GoTo ErrorHandler
-    
+
     ' Initialize variables
     totalPagoNeto = 0
     processAllSheets = IsEmpty(sheetNames)
@@ -171,6 +171,25 @@ Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
     Exit Function
 
 ErrorHandler:
-    MsgBox ERROR_GENERIC & Err.Description, vbCritical, "Error"
+    Debug.Print "Error in GetManagerPagoNeto: " & Err.Description
+    HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "GetManagerPagoNeto"
     GetManagerPagoNeto = 0
 End Function
+
+'=========================================================
+' Subroutine: StoreTotalInTargetCell
+' Description:
+'    This subroutine stores the total sum in a specified target cell.
+' Parameters:
+'   - targetSheet (Worksheet): The worksheet where the total will be stored.
+'   - total (Currency): The total sum to be stored.
+' Returns:
+'   - None
+' Notes:
+'   - The target cell is defined by the constant TARGET_CELL.
+'   - The function assumes the target cell is in the specified worksheet.
+'=========================================================
+' Subroutine to store the total sum in the target cell
+Public Sub StoreTotalInTargetCell(targetSheet As Worksheet, total As Currency)
+    targetSheet.Range(TARGET_CELL).Value = total
+End Sub

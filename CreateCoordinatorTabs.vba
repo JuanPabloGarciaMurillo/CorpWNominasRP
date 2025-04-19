@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: CreateCoordinatorTabs
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -371,7 +371,8 @@ Exit Sub
 
 ErrHandler:
     If Err.Number <> 0 Then
-        MsgBox ERROR_GENERIC & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorTabs"
+        Debug.Print "Error in CreateCoordinatorTabs: " & Err.Description
+        HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "CreateCoordinatorTabs"
     End If
 
     ' Restore the original visibility state of the sheets

@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: Worksheet(Gerente)
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -14,7 +14,6 @@
 '   - The script assumes the presence of specific named ranges and structured tables in the worksheet.
 '   - It uses constants for sheet names, table names, and column names to improve readability and maintainability.
 '=========================================================
-
 
 '=========================================================
 ' Event: Worksheet_Change
