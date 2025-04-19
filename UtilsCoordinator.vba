@@ -1,6 +1,6 @@
 '=========================================================
 ' Script: UtilsCoordinator
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -11,6 +11,7 @@
 '   - GetCoordinatorAliases
 '   - DeleteManagerCoordinatorTab
 '   - CreateCoordinatorTabs_newTabs
+'   - GetPromotersForCoordinator
 '=========================================================
 
 '=========================================================
@@ -109,8 +110,7 @@ End Sub
 '   - Collection: The collection of sheet names representing the newly
 '     created tabs.
 ' Notes:
-'   - The function assumes that the collection `newTabs` has been properly
-'     populated elsewhere in the code.
+'   - The function assumes that the collection `newTabs` has been properly populated elsewhere in the code.
 '=========================================================
 
 ' Function to return the newTabs collection from the global scope
@@ -121,4 +121,38 @@ Public Function CreateCoordinatorTabs_newTabs() As Collection
         Exit Function
     End If
     Set CreateCoordinatorTabs_newTabs = newTabs
+End Function
+
+
+'=========================================================
+' Function: GetPromotersForCoordinator
+' Description:
+'   This function retrieves the list of promoters for a given coordinator from the "Promoters" sheet.
+'   It uses a ListObject (table) named "PromotersTable" to find the corresponding promoters based on the coordinator name.
+'   The function returns a collection of promoter names.
+' Parameters:
+'   - coordinatorName (String): The name of the coordinator to find promoters for.
+' Returns:
+'   - Collection: A collection of promoter names associated with the specified coordinator.
+' Notes:
+'   - The function assumes that the "Promoters" sheet contains a table with the first column containing coordinator names and the second column containing promoter names.
+'=========================================================
+Public Function GetPromotersForCoordinator(coordinatorName As String) As Collection
+    Dim promoters As New Collection
+    Dim wsPromoters As Worksheet
+    Dim promoterTable As ListObject
+    Dim row As ListRow
+
+    ' Set the worksheet and table where the coordinator-promoter relationships are stored
+    Set wsPromoters = ThisWorkbook.Sheets(PROMOTORES_SHEET)
+    Set promoterTable = wsPromoters.ListObjects(PROMOTORES_TABLE)
+
+    ' Loop through the table to find promoters for the given coordinator
+    For Each row In promoterTable.ListRows
+        If UCase(row.Range(1, 1).Value) = UCase(coordinatorName) Then
+            promoters.Add row.Range(1, 2).Value
+        End If
+    Next row
+
+    Set GetPromotersForCoordinator = promoters
 End Function

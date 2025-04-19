@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: CreatePromotorTabs
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -330,14 +330,18 @@ Public Sub CreatePromotorTabs()
             ws.Visible = sheetState(ws.Name)
         End If
     Next ws
-    
-    Exit Sub
-    
-    ErrHandler:
-    If Err.Number <> 0 Then
-        MsgBox ERROR_GENERIC & Err.Number & ": " & Err.Description, vbCritical, "CreatePromotorTabs"
+
+    ' Call SumPagoNetoCoordinacion at the end
+    If Not newTabs Is Nothing And newTabs.Count > 0 Then
+        Call SumPagoNetoCoordinacion(newTabs, wsSource)    
     End If
     
+ErrHandler:
+    If Err.Number <> 0 Then
+        Debug.Print "Error in CreatePromotorTabs: " & Err.Description
+        HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "CreatePromotorTabs"
+    End If
+
     ' Restore the original visibility state of the sheets
     On Error Resume Next
     For Each ws In ThisWorkbook.Sheets
@@ -346,10 +350,10 @@ Public Sub CreatePromotorTabs()
         End If
     Next ws
     On Error GoTo 0
-    
+
     ' Restore application settings
-    Application.CutCopyMode = FALSE
-    Application.ScreenUpdating = TRUE
+    Application.CutCopyMode = False
+    Application.ScreenUpdating = True
     Application.Calculation = xlCalculationAutomatic
     Exit Sub
     

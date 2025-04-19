@@ -1,6 +1,6 @@
 '=========================================================
 ' Subroutine: CreateCoordinatorAndPromotorTabs
-' Version: 0.9.0
+' Version: 0.9.1
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -71,6 +71,6 @@ Sub CreateCoordinatorAndPromotorTabs()
 ErrHandler:
     If Err.Number <> 0 Then
         Debug.Print "Error in CreateCoordinatorAndPromotorTabs: " & Err.Description
-        MsgBox ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, vbCritical, "CreateCoordinatorAndPromotorTabs"
+        HandleError ERROR_GENERIC & " " & Err.Number & ": " & Err.Description, "CreateCoordinatorAndPromotorTabs"
     End If
 End Sub
