@@ -1,10 +1,10 @@
-# Excel Automation Suite - Version 0.9.0
+# Excel Automation Suite - Version 0.9.1
 
 ## Description
 
 The **Excel Automation Suite** is a powerful collection of VBA tools that streamline worksheet creation, data validation, and reporting processes for managers, coordinators, and promotors. Built for efficiency and maintainability, this suite automates repetitive tasks and provides advanced features like dynamic dropdowns, smart filtering, and visual reporting dashboards.
 
-Version **0.9.0** introduces enhancements to the `Dashboard` layout and dynamic chart generation, improving clarity and usability for visual reports. It also includes minor updates across utility modules to support the changes.
+Version **0.9.1** introduces improvements in error handling across several key modules, refines the `SumPagoNeto` calculations, and enhances utility modules to support more efficient workflows. Key modules such as `UtilsCoordinator`, `UtilsData`, and `UtilsErrorHandling` have seen major updates for better modularity and improved consistency.
 
 ---
 
@@ -37,7 +37,7 @@ Version **0.9.0** introduces enhancements to the `Dashboard` layout and dynamic 
   - Charts are refreshed automatically for accurate reporting.
   - Redesigned in v0.9.0 with improved layout and chart spacing.
 
-### 🧰 **Modular Utilities (v0.7.0+)**
+### 🧰 **Modular Utilities (v0.9.1)**
 
 Scripts are modularized across 8 utility modules for clarity and reuse:
 
@@ -49,6 +49,7 @@ Scripts are modularized across 8 utility modules for clarity and reuse:
 - `UtilsSheet`: Creates, renames, and sanitizes sheets.
 - `UtilsTable`: Table filters, sorting, and extraction.
 - `UtilsValidation`: Handles dynamic dropdown validations.
+- `UtilsErrorHandling`: Centralizes error handling for more consistent and modular error management.
 
 ---
 
@@ -104,6 +105,19 @@ Scripts are modularized across 8 utility modules for clarity and reuse:
 ---
 
 ## Version History
+
+### Version 0.9.1
+
+- 🧠 **Improved Error Handling**:
+  - Replaced direct `MsgBox` calls with a centralized `HandleError` function across several modules.
+  - Ensured consistent error reporting and logging.
+- 🔧 **Refined SumPagoNeto Calculations**:
+  - Streamlined logic in `SumPagoNetoCoordinacion` and `SumPagoNetoGerencia` for better modularity.
+  - Enhanced flexibility by modifying function signatures.
+- 🧩 **Utility Enhancements**:
+  - Added new functions in `UtilsCoordinator`, `UtilsCollections`, and `UtilsData`.
+  - Introduced `StoreTotalInTargetCell` for storing sums directly in target cells.
+  - Improved consistency in utility modules' error handling and metadata tracking.
 
 ### Version 0.9.0
 
