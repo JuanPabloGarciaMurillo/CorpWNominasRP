@@ -1,6 +1,5 @@
-'=========================================================
 ' Class Module: clsDictionary
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -28,7 +27,6 @@
 '   - Keys are treated as strings and stored in insertion order.
 '   - Duplicate keys are not allowed.
 '   - This class mimics basic Dictionary behavior in environments where the Scripting.Dictionary object is unavailable or undesired.
-'=========================================================
 
 Private dictKeys    As Collection
 Private dictValues  As Collection
@@ -130,5 +128,5 @@ Private Function FindKeyIndex(key As String) As Long
             Exit Function
         End If
     Next i
-    FindKeyIndex = 0        ' Key not found
+    FindKeyIndex = 0
 End Function

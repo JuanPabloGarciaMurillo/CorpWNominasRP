@@ -1,6 +1,5 @@
-'=========================================================
 ' Script: UtilsManager
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -10,21 +9,16 @@
 ' Functions included in this module:
 '   - GetManagerAliasFromNombreGerente
 '   - RenameGerenteTabToAlias
-'=========================================================
 
-'=========================================================
 ' Function: GetManagerAliasFromNombreGerente
 ' Description:
 '    This function retrieves the manager's name from cell B1 and checks for their aliases.
 '    It uses the GetCoordinatorAliases function to get the aliases based on the manager's name.
-' Parameters:
-'   -  None
 ' Returns:
 '   -   Collection: A collection of aliases for the specified manager.
 ' Notes:
 '   -  The function checks if cell B1 is empty and shows a message if so.
 '   -  It retrieves the manager's name from cell B1 and uses it to call the GetCoordinatorAliases function.
-'=========================================================
 
 Public Function GetManagerAliasFromNombreGerente() As String
     Dim wsColaboradores As Worksheet
@@ -66,7 +60,6 @@ Public Function GetManagerAliasFromNombreGerente() As String
     GetManagerAliasFromNombreGerente = ""
 End Function
 
-'=========================================================
 ' Function: RenameGerenteTabToAlias
 ' Description:
 '   Renames the active Gerente sheet based on the value in cell B1
@@ -78,7 +71,6 @@ End Function
 '   - Checks if B1 is empty and shows a message if so.
 '   - Searches for the Gerente name in the "Gerentes" table.
 '   - Prevents renaming if the alias already exists as a sheet.
-'=========================================================
 
 Public Function RenameGerenteTabToAlias() As String
     On Error GoTo ErrHandler

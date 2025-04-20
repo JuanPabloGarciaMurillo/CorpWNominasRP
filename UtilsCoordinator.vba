@@ -1,6 +1,5 @@
-'=========================================================
 ' Script: UtilsCoordinator
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -12,9 +11,7 @@
 '   - DeleteManagerCoordinatorTab
 '   - CreateCoordinatorTabs_newTabs
 '   - GetPromotersForCoordinator
-'=========================================================
 
-'=========================================================
 ' Function: GetCoordinatorAliases
 ' Description:
 '   Checks for the aliases of coordinators based on the manager name.
@@ -25,7 +22,7 @@
 ' Notes:
 '   - The function uses a ListObject (table) named "Coordinadores" in the "Colaboradores" sheet.
 '   - It retrieves the GERENCIA and ALIAS columns from the table.
-'=========================================================
+
 Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "") As Collection
     Dim aliases     As Collection
     Dim wsColaboradores As Worksheet
@@ -70,17 +67,12 @@ Public Function GetCoordinatorAliases(Optional ByVal managerName As String = "")
     Set GetCoordinatorAliases = Nothing
 End Function
 
-'=========================================================
 ' Function: DeleteManagerCoordinatorTab
 ' Description:
 '   Deletes all tabs in the workbook whose names end with " (C)".
-' Parameters:
-'   - None
-' Returns:
-'   - None
 ' Notes:
 '   - This function iterates through all sheets in the workbook and deletes those whose names end with " (C)".
-'=========================================================
+
 Public Sub DeleteManagerCoordinatorTab()
     Dim ws          As Worksheet
     Dim tabName     As String
@@ -98,22 +90,17 @@ Public Sub DeleteManagerCoordinatorTab()
     Next ws
 End Sub
 
-'=========================================================
 ' Function: CreateCoordinatorTabs_newTabs
 ' Description:
 '   This function returns the collection of newly created tabs (newTabs).
 '   It provides access to the collection for checking or further processing
 '   of the newly created sheets.
-' Parameters:
-'   - None
 ' Returns:
 '   - Collection: The collection of sheet names representing the newly
 '     created tabs.
 ' Notes:
 '   - The function assumes that the collection `newTabs` has been properly populated elsewhere in the code.
-'=========================================================
 
-' Function to return the newTabs collection from the global scope
 Public Function CreateCoordinatorTabs_newTabs() As Collection
     ' This function returns the newTabs collection
     If newTabs Is Nothing Then
@@ -123,7 +110,6 @@ Public Function CreateCoordinatorTabs_newTabs() As Collection
     Set CreateCoordinatorTabs_newTabs = newTabs
 End Function
 
-'=========================================================
 ' Function: GetPromotersForCoordinator
 ' Description:
 '   This function retrieves the list of promoters for a given coordinator from the "Promoters" sheet.
@@ -135,7 +121,7 @@ End Function
 '   - Collection: A collection of promoter names associated with the specified coordinator.
 ' Notes:
 '   - The function assumes that the "Promoters" sheet contains a table with the first column containing coordinator names and the second column containing promoter names.
-'=========================================================
+
 Public Function GetPromotersForCoordinator(coordinatorName As String) As Collection
     Dim promoters   As New Collection
     Dim wsPromoters As Worksheet

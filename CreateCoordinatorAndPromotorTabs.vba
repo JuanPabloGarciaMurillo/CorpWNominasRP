@@ -1,6 +1,5 @@
-'=========================================================
 ' Subroutine: CreateCoordinatorAndPromotorTabs
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -12,17 +11,12 @@
 '   `CreatePromotorTabs` subroutine to create promotor-specific worksheets.
 '   Finally, it calls `SumPagoNetoGerencia` to calculate the total "PAGO NETO"
 '   values based on the activating sheet.
-' Parameters:
-'   - None
-' Returns:
-'   - None
 ' Notes:
 '   - The `newTabs` collection, containing the names of the newly created
 '     coordinator tabs, is retrieved from the `CreateCoordinatorTabs_newTabs`
 '     function in the `Utils` module.
 '   - The code uses error handling to capture and display any runtime errors
 '     encountered during execution.
-'=========================================================
 
 Sub CreateCoordinatorAndPromotorTabs()
     On Error GoTo ErrHandler

@@ -1,6 +1,5 @@
-'=========================================================
 ' Script: UtilsCollections
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -10,9 +9,8 @@
 '   - KeyExists
 '   - IsInArray
 '   - CollectionToArray
-'=========================================================
+'   - InitializeHeaderMapping
 
-'=========================================================
 ' Function: KeyExists
 ' Description:
 '   Checks if a key exists in a collection.
@@ -25,7 +23,6 @@
 '   - Uses On Error Resume Next to suppress errors.
 '   - Returns True if the key exists, False otherwise.
 '   - The function is case-sensitive.
-'=========================================================
 
 Public Function KeyExists(col As Collection, key As String) As Boolean
     On Error Resume Next
@@ -43,7 +40,6 @@ Public Function KeyExists(col As Collection, key As String) As Boolean
     On Error GoTo 0
 End Function
 
-'=========================================================
 ' Function: IsInArray
 ' Description:
 '   Checks if a value exists in an array.
@@ -57,7 +53,7 @@ End Function
 '   - Uses On Error Resume Next to suppress errors.
 '   - The function is case-sensitive by default.
 '   - The function converts the value to a string before checking.
-'=========================================================
+
 Public Function IsInArray(value As Variant, arr As Variant, Optional caseInsensitive As Boolean = False) As Boolean
     Dim i           As Long
     Dim strValue    As String
@@ -80,7 +76,6 @@ Public Function IsInArray(value As Variant, arr As Variant, Optional caseInsensi
     IsInArray = FALSE
 End Function
 
-'=========================================================
 ' Function: CollectionToArray
 ' Description:
 '    Converts a Collection to an array.
@@ -92,7 +87,7 @@ End Function
 '   - The function assumes the collection contains string values.
 '   - The function uses ReDim to create a dynamic array based on the collection count.
 '   - The function iterates through the collection and assigns each value to the array.
-'=========================================================
+
 Public Function CollectionToArray(coll As Collection) As Variant
     Dim arr()       As String
     Dim i           As Integer
@@ -104,3 +99,32 @@ Public Function CollectionToArray(coll As Collection) As Variant
     
     CollectionToArray = arr
 End Function
+
+' Function: InitializeHeaderMapping
+' Description:
+'     Initializes a dictionary with header mappings.
+' Parameters:
+'   - HEADERS (String): A comma-separated string of headers.
+'   - COLUMN_INDICES (String): A comma-separated string of column indices.
+'   - headerMapping (clsDictionary): The dictionary to store the header mappings.
+' Notes:
+'   - The function splits the headers and column indices into arrays.
+'   - It loops through the headers and adds them to the dictionary.
+'   - The function checks if the header already exists in the dictionary before adding it.
+
+Public Sub InitializeHeaderMapping(HEADERS As String, COLUMN_INDICES As String, headerMapping As clsDictionary)
+    Dim headersArray As Variant
+    Dim columnIndex As Variant
+    Dim idx As Integer
+    
+    ' Split the headers and column indices into arrays
+    headersArray = Split(HEADERS, ",")
+    columnIndex = Split(COLUMN_INDICES, ",")
+    
+    ' Loop through the headers and add them to the dictionary
+    For idx = LBound(headersArray) To UBound(headersArray)
+        If Not headerMapping.Exists(CStr(headersArray(idx))) Then
+            headerMapping.Add CStr(headersArray(idx)), columnIndex(idx)
+        End If
+    Next idx
+End Sub

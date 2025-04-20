@@ -1,21 +1,13 @@
-'=========================================================
 ' Script: Worksheet(Gerente)
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
 '   This script handles events for the "Gerente" worksheet in Excel. It includes event handlers for changes in the worksheet and recalculations. The script manages data validation, populates tables with aliases, and refreshes PivotTables on the dashboard.
-'
-' Parameters:
-'   - None (applies to the entire worksheet upon changes or recalculations).
-' Returns:
-'   - None
 ' Notes:
 '   - The script assumes the presence of specific named ranges and structured tables in the worksheet.
 '   - It uses constants for sheet names, table names, and column names to improve readability and maintainability.
-'=========================================================
 
-'=========================================================
 ' Event: Worksheet_Change
 ' Description:
 '   Triggered when a cell on the worksheet changes. This event handler:
@@ -27,13 +19,10 @@
 '     - Applies dynamic data validation to "PROMOTOR" cells based on changes in the "COORDINADOR" column.
 ' Parameters:
 '   - Target (Range): The range that was changed by the user.
-' Returns:
-'   - None
 ' Notes:
 '   - Assumes the sheet contains a named range "Nombre_Gerente".
 '   - Expects a structured table with "COORDINADOR" and "PROMOTOR" columns.
 '   - Assumes a single table is present in the worksheet.
-'=========================================================
 
 Private Sub Worksheet_Change(ByVal Target As Range)
     Dim wsColaboradores As Worksheet
@@ -81,7 +70,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         
         ' Check if there are no aliases
         If aliases.Count = 0 Then
-            MsgBox ERROR_NO_COORDINATORS & managerCell.value &        '.", vbInformation, "Sin Resultados"
+            MsgBox ERROR_NO_COORDINATORS & managerCell.value & ".", vbInformation, "Sin Resultados"
             Exit Sub
         End If
         
@@ -132,22 +121,17 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     End If
 End Sub
 
-'=========================================================
 ' Event: Worksheet_Calculate
 ' Description:
 '   Triggered when the worksheet is recalculated. This handler:
 '     - Loops through the "COORDINADOR" column of the first table in the sheet.
 '     - Finds the corresponding cell in the "PROMOTOR" column.
 '     - Calls the `ProcessRow` subroutine to apply data validation or other processing logic row by row.
-' Parameters:
-'   - None (applies to the entire worksheet upon recalculation).
-' Returns:
-'   - None
 ' Notes:
 '   - Requires exactly one structured table on the worksheet.
 '   - Table must contain both "COORDINADOR" and "PROMOTOR" columns.
 '   - Uses dynamic positioning to align data across the two columns.
-'=========================================================
+
 Private Sub Worksheet_Calculate()
     On Error GoTo ErrorHandler
     Dim wsCurrent   As Worksheet

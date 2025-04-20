@@ -1,6 +1,5 @@
-'=========================================================
 ' Subroutine: SumPagoNetoGerencia
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -12,13 +11,10 @@
 ' Parameters:
 '   - targetSheet (Worksheet): The sheet where the calculated total
 '     will be placed in cell J4.
-' Returns:
-'   - None
 ' Notes:
 '   - The "PAGO NETO" values are assumed to be in a consistent location
 '     across all sheets being summed.
 '   - The total sum is stored in cell J4 of the specified target sheet.
-'=========================================================
 
 Public Sub SumPagoNetoGerencia(targetSheet As Worksheet)
     On Error GoTo ErrorHandler
