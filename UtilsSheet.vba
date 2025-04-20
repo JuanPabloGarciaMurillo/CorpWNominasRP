@@ -1,11 +1,9 @@
-'=========================================================
 ' Script: UtilsSheet
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
-'   This module contains utility functions for working with sheets in Excel VBA. It includes functions for checking if a sheet exists, deleting unprotected tabs, and sanitizing sheet names. The module is designed to help manage the organization and naming of sheets in the workbook.
-' and procedures in the workbook.
+'   This module contains utility functions for working with sheets in Excel VBA. It includes functions for checking if a sheet exists, deleting unprotected tabs, and sanitizing sheet names. The module is designed to help manage the organization and naming of sheets in the workbook, and procedures in the workbook.
 ' Functions included in this module:
 '   - SheetExists
 '   - DeleteUnprotectedTabs
@@ -14,9 +12,7 @@
 '   - GetSheetNamesCollection
 '   - RestoreSheetVisibility
 '   - CreateNewTab
-'=========================================================
 
-'=========================================================
 ' Function: SheetExists
 ' Description:
 '   Checks whether a worksheet with the specified name exists in the current workbook.
@@ -27,7 +23,7 @@
 ' Notes:
 '   - The check is case-insensitive.
 '   - Suppresses runtime errors using On Error Resume Next.
-'=========================================================
+
 Public Function SheetExists(sheetName As Variant) As Boolean
     Dim sheetNameStr As String
     
@@ -38,18 +34,15 @@ Public Function SheetExists(sheetName As Variant) As Boolean
     On Error GoTo 0
 End Function
 
-'=========================================================
 ' Function: DeleteUnprotectedTabs
 ' Description:
 '   Deletes all unprotected tabs in the workbook, except for the active tab and any tabs specified in the protectedTabs array.
 ' Parameters:
 '  - protectedTabs (Variant): An array of tab names to protect from deletion.
-' Returns:
-'  - None
 ' Notes:
 '   - The function uses a loop to iterate through all sheets in the workbook.
 '   - It checks if the tab name is in the protectedTabs array or if it is the active tab before deleting.
-'=========================================================
+
 Public Sub DeleteUnprotectedTabs(protectedTabs As Variant)
     Dim ws          As Worksheet
     Dim tabName     As String
@@ -75,7 +68,6 @@ Public Sub DeleteUnprotectedTabs(protectedTabs As Variant)
     Next ws
 End Sub
 
-'=========================================================
 ' Function: SanitizeSheetName
 ' Description:
 '   This function sanitizes a given string to make it a valid Excel sheet name.
@@ -85,7 +77,7 @@ End Sub
 '   - sheetName (Variant): The name to sanitize.
 ' Returns:
 '   - String: The sanitized sheet name.
-'=========================================================
+
 Public Function SanitizeSheetName(sheetName As Variant) As String
     On Error Resume Next
     
@@ -116,7 +108,6 @@ Public Function SanitizeSheetName(sheetName As Variant) As String
     SanitizeSheetName = sheetName
 End Function
 
-'=========================================================
 ' Function: IsInNewTabs
 ' Description:
 '   This function checks if a given sheet name exists in a collection of newly created tabs.
@@ -126,7 +117,7 @@ End Function
 '   - newTabs (Collection): A collection containing the names of newly created sheets.
 ' Returns:
 '   - Boolean: True if the sheet is in the collection, otherwise False.
-'=========================================================
+
 Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boolean
     Dim i           As Integer
     On Error Resume Next
@@ -149,7 +140,6 @@ Public Function IsInNewTabs(sheetName As String, newTabs As Collection) As Boole
     IsInNewTabs = FALSE
 End Function
 
-'=========================================================
 ' Function: GetSheetNamesCollection
 ' Description:
 '    This function retrieves a collection of sheet names from a specified range in the active sheet.
@@ -164,7 +154,7 @@ End Function
 '   - The function uses a loop to iterate through the specified range.
 '   - It checks if each sheet name exists using the SheetExists function.
 '   - If a sheet name does not exist, a message box is displayed and the function exits.
-'=========================================================
+
 Public Function GetSheetNamesCollection(nameRange As Range, targetSheet As Worksheet, ByRef currentSheetIncluded As Boolean) As Collection
     Dim sheetNamesCollection As New Collection
     Dim cell        As Range
@@ -172,7 +162,7 @@ Public Function GetSheetNamesCollection(nameRange As Range, targetSheet As Works
     For Each cell In nameRange
         If cell.Value <> "" Then
             If Not SheetExists(cell.Value) Then
-                MsgBox ERROR_SHEET_NOT_FOUND & cell.Value &        ' no existe.", vbExclamation, "Error"
+                MsgBox ERROR_SHEET_NOT_FOUND & cell.Value &        " no existe.", vbExclamation, "Error"
                 Exit Function
             End If
             sheetNamesCollection.Add cell.Value
@@ -185,20 +175,18 @@ Public Function GetSheetNamesCollection(nameRange As Range, targetSheet As Works
     Set GetSheetNamesCollection = sheetNamesCollection
 End Function
 
-'=========================================================
 ' Function: RestoreSheetVisibility
 ' Description:
 '     This function restores the visibility of sheets based on their previous state.
 ' Parameters:
 '   - sheetState (Collection): A collection containing the visibility state of each sheet.
 '   - newTabs (Collection): A collection of newly created tabs that should remain visible.
-' Returns:
-'   - None
+'
 ' Notes:
 '   - The function iterates through all sheets in the workbook.
 '   - It checks if each sheet is in the newTabs collection and restores its visibility accordingly.
 '   - If a sheet is not in the newTabs collection, its visibility is set to the state stored in the sheetState collection.
-'=========================================================
+
 Public Sub RestoreSheetVisibility(sheetState As Collection, newTabs As Collection)
     Dim ws          As Worksheet
     For Each ws In ThisWorkbook.Sheets
@@ -208,7 +196,6 @@ Public Sub RestoreSheetVisibility(sheetState As Collection, newTabs As Collectio
     Next ws
 End Sub
 
-'=========================================================
 ' Function: CreateNewTab
 ' Description:
 '     This function creates a new tab based on a template sheet.
@@ -223,7 +210,7 @@ End Sub
 ' Notes:
 '   - The function copies the template sheet to a new location and renames it.
 '   - It also sets the new tab to visible and adds it to the newTabs collection.
-'=========================================================
+
 Public Function CreateNewTab(templateSheet As Worksheet, tabName As Variant, placementAfter As Worksheet, newTabs As Collection) As Worksheet
     Dim newTab      As Worksheet
     Dim tabNameStr  As String

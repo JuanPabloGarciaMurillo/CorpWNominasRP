@@ -1,6 +1,5 @@
-'=========================================================
 ' Module: Constants
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -9,7 +8,6 @@
 ' Usage:
 '   - Declare all constants as `Public Const` to make them accessible across the entire project.
 '   - Group related constants logically (e.g., sheet names, table names, column names, error messages).
-'=========================================================
 
 'Sheet Constants
 Public Const PLANTEL_SHEET As String = "Planteles"

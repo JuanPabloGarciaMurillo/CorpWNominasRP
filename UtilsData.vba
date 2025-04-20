@@ -1,6 +1,5 @@
-'=========================================================
 ' Script: UtilsData
-' Version: 0.9.2
+' Version: 0.9.3
 ' Author: Juan Pablo Garcia Murillo
 ' Date: 04/18/2025
 ' Description:
@@ -11,9 +10,7 @@
 '   - GetManagerPagoNeto
 '   - StoreTotalInTargetCell
 '   - PasteCommonValues
-'=========================================================
 
-'=========================================================
 ' Function: SumPagoNetoFromSheets
 ' Description:
 '   This function calculates the total "PAGO NETO" value from column D across multiple worksheets.
@@ -26,7 +23,6 @@
 ' Notes:
 '   - Only sums values where "PAGO NETO" appears in column A.
 '   - If `sheetNames` is empty, it processes all visible sheets in the workbook.
-'=========================================================
 
 Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Dim ws          As Worksheet
@@ -94,7 +90,6 @@ Public Function SumPagoNetoFromSheets(sheetNames As Variant) As Currency
     Application.Calculation = xlCalculationAutomatic
 End Function
 
-'=========================================================
 ' Function: IsRowEmpty
 ' Description:
 '   This function checks if a specified row in a worksheet is empty, ignoring the first column.
@@ -107,9 +102,7 @@ End Function
 ' Notes:
 '   - Assumes the worksheet contains at least one table (ListObject) to determine the last column.
 '   - Only considers columns from the second column onward.
-'=========================================================
 
-' Function to check if the row is empty (ignores only the first column)
 Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     Dim col         As Long
     Dim lastColumn  As Long
@@ -134,7 +127,6 @@ Public Function IsRowEmpty(ws As Worksheet, rowNum As Long) As Boolean
     IsRowEmpty = TRUE
 End Function
 
-'=========================================================
 ' Function: GetManagerPagoNeto
 ' Description:
 '   This function retrieves the "PAGO NETO" value from the manager sheet.
@@ -146,7 +138,7 @@ End Function
 ' Notes:
 '   - Assumes the "PAGO NETO" text is in uppercase.
 '   - If the value in column E is not numeric, it returns 0.
-'=========================================================
+
 Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
     Dim lastRow     As Long
     Dim rowIndex    As Long
@@ -178,25 +170,21 @@ Public Function GetManagerPagoNeto(managerSheet As Worksheet) As Currency
     GetManagerPagoNeto = 0
 End Function
 
-'=========================================================
 ' Subroutine: StoreTotalInTargetCell
 ' Description:
 '    This subroutine stores the total sum in a specified target cell.
 ' Parameters:
 '   - targetSheet (Worksheet): The worksheet where the total will be stored.
 '   - total (Currency): The total sum to be stored.
-' Returns:
-'   - None
 ' Notes:
 '   - The target cell is defined by the constant TARGET_CELL.
 '   - The function assumes the target cell is in the specified worksheet.
-'=========================================================
 ' Subroutine to store the total sum in the target cell
+
 Public Sub StoreTotalInTargetCell(targetSheet As Worksheet, total As Currency)
     targetSheet.Range(TARGET_CELL).Value = total
 End Sub
 
-'=========================================================
 ' Subroutine: PasteCommonValues
 ' Description:
 '   Copies shared values (e.g., "razonSocial", "periodoDelPagoDel") to a target worksheet.
@@ -206,11 +194,9 @@ End Sub
 '   - periodoDelPagoDel (Variant): The value to copy to cell B3.
 '   - fechaDeExpedicion (Variant): The value to copy to cell B6.
 '   - periodoDelPagoAl (Variant): The value to copy to cell D3.
-' Returns:
-'   - None
 ' Notes:
 '   - This function is reusable for any worksheet where these values need to be copied.
-'=========================================================
+
 Public Sub PasteCommonValues(targetSheet As Worksheet, razonSocial As Variant, periodoDelPagoDel As Variant, _
     fechaDeExpedicion As Variant, periodoDelPagoAl As Variant)
     ' Paste the values into the corresponding cells
