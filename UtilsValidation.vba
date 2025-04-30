@@ -13,34 +13,59 @@
 
 ' Function: GetAliasList
 ' Description:
-'   This function retrieves a list of aliases based on the provided coordination value.
+'   This function retrieves a list of aliases based on a coordination value from a table.
+'   It concatenates the aliases into a comma-separated string.
 ' Parameters:
-'   - coordValue (String): The coordination value to filter the aliases.
+'   - coordValue (String): The coordination value to filter by.
 ' Returns:
-'   - String: A comma-separated list of aliases.
+'   -  String: A comma-separated list of aliases for the specified coordination value.
 ' Notes:
-'   - The function uses the TEXTJOIN function to concatenate the aliases.
+'   - The function uses a ListObject (table) named "Colaboradores" in the "Colaboradores" sheet.
+'   - It retrieves the COORDINACION and ALIAS columns from the table.
 '   - It assumes the aliases are stored in a table named "Promotores" with columns "COORDINACION" and "ALIAS".
 
 Public Function GetAliasList(ByVal coordValue As String) As String
+    Dim tbl As ListObject
+    Dim aliasList As String
+    Dim coordColumnIndex As Long
+    Dim aliasColumnIndex As Long
+    Dim row As ListRow
     
-    Dim validationFormula As String
-    Dim result      As Variant
-    
-    ' Build the formula to retrieve the alias list dynamically
-    validationFormula = "=TEXTJOIN("","", TRUE, IF(" & PROMOTORES_TABLE & "[" & COORDINACION_COLUMN & "] = """ & coordValue & """, " & PROMOTORES_TABLE & "[" & ALIAS_COLUMN & "], """"))"
-    
-    ' Evaluate the formula
+    ' Set the table reference
     On Error Resume Next
-    result = Evaluate(validationFormula)
+    Set tbl = ThisWorkbook.Sheets(COLABORADORES_SHEET).ListObjects(PROMOTORES_TABLE)
     On Error GoTo 0
     
-    ' Return the result as a trimmed string
-    If IsError(result) Or IsEmpty(result) Then
+    If tbl Is Nothing Then
         GetAliasList = ""
-    Else
-        GetAliasList = Trim(result)
+        Exit Function
     End If
+    
+    ' Get the column indices for COORDINACION and ALIAS
+    On Error Resume Next
+    coordColumnIndex = tbl.ListColumns(COORDINACION_COLUMN).Index
+    aliasColumnIndex = tbl.ListColumns(ALIAS_COLUMN).Index
+    On Error GoTo 0
+    
+    If coordColumnIndex = 0 Or aliasColumnIndex = 0 Then
+        GetAliasList = ""
+        Exit Function
+    End If
+    
+    ' Loop through the rows in the table and build the alias list
+    aliasList = ""
+    For Each row In tbl.ListRows
+        If row.Range.Cells(1, coordColumnIndex).Value = coordValue Then
+            aliasList = aliasList & row.Range.Cells(1, aliasColumnIndex).Value & ","
+        End If
+    Next row
+    
+    ' Remove the trailing comma
+    If Len(aliasList) > 0 Then
+        aliasList = Left(aliasList, Len(aliasList) - 1)
+    End If
+    
+    GetAliasList = aliasList
 End Function
 
 ' Sub: ClearValidation
