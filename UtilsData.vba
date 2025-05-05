@@ -207,3 +207,38 @@ Public Sub PasteCommonValues(targetSheet As Worksheet, razonSocial As Variant, p
         .Range("D3").Value = periodoDelPagoAl
     End With
 End Sub
+
+' Function: CombineRanges
+' Description:
+'    This function combines three ranges into a single array.
+'    It is used to concatenate values from different ranges into a single array.
+' Parameters:
+'   - rng1 (Range): The first range to combine.
+'   - rng2 (Range): The second range to combine.
+'   - rng3 (Range): The third range to combine.
+' Returns:
+'   - Variant: An array containing the combined values from all three ranges.
+' Notes:
+'   - The function uses a dynamic array to store the combined values.
+Function CombineRanges(rng1 As Range, rng2 As Range, rng3 As Range) As Variant
+    Dim arr(), i As Long, j As Long, totalSize As Long
+
+    totalSize = rng1.Cells.Count + rng2.Cells.Count + rng3.Cells.Count
+    ReDim arr(1 To totalSize, 1 To 1)
+
+    j = 1
+    For i = 1 To rng1.Cells.Count
+        arr(j, 1) = rng1.Cells(i, 1).Value
+        j = j + 1
+    Next i
+    For i = 1 To rng2.Cells.Count
+        arr(j, 1) = rng2.Cells(i, 1).Value
+        j = j + 1
+    Next i
+    For i = 1 To rng3.Cells.Count
+        arr(j, 1) = rng3.Cells(i, 1).Value
+        j = j + 1
+    Next i
+
+    CombineRanges = arr
+End Function
